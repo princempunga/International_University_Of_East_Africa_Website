@@ -1,0 +1,116 @@
+const API_URL = 'http://localhost:8000/api'
+
+export const api = {
+  // Get token from localStorage
+  getToken: () => typeof window !== 'undefined' ? localStorage.getItem('iuea_token') : null,
+  
+  // Authenticated request helper
+  authFetch: async (endpoint: string, options: any = {}) => {
+    const token = api.getToken()
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          ...options.headers,
+        },
+      })
+      
+      if (response.status === 401) {
+        // Handle unauthorized (optional: trigger logout)
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          localStorage.removeItem('iuea_token')
+          localStorage.removeItem('iuea_user')
+          localStorage.removeItem('iuea_role')
+          window.location.href = '/login'
+        }
+      }
+      
+      const data = await response.json().catch(() => null)
+      
+      if (!response.ok) {
+        throw new Error(data?.message || `Request failed with status ${response.status}`)
+      }
+      
+      return data
+    } catch (error: any) {
+      console.error(`API Error (${endpoint}):`, error)
+      if (error.message === 'Failed to fetch') {
+        throw new Error('Could not connect to the server. Please ensure the backend is running.')
+      }
+      throw error
+    }
+  },
+
+  // Auth
+  login: (email: string, password: string) => 
+    fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    }).then(async r => {
+      const data = await r.json().catch(() => null)
+      if (!r.ok) {
+        throw new Error(data?.message || 'Login failed')
+      }
+      return data
+    }).catch(error => {
+      if (error.message === 'Failed to fetch') {
+        throw new Error('Could not connect to the server. Please ensure the backend is running.')
+      }
+      throw error
+    }),
+
+  logout: () => api.authFetch('/auth/logout', { method: 'POST' }),
+  me: () => api.authFetch('/auth/me'),
+
+  // Dashboard stats
+  getStats: () => api.authFetch('/stats'),
+  
+  // Products
+  getProducts: () => api.authFetch('/products'),
+  createProduct: (data: any) => api.authFetch('/products', { 
+    method: 'POST', body: JSON.stringify(data) 
+  }),
+  
+  // Orders
+  getOrders: () => api.authFetch('/orders'),
+  updateOrderStatus: (id: number | string, status: string) => api.authFetch(`/orders/${id}/status`, {
+    method: 'PUT', body: JSON.stringify({ status })
+  }),
+  
+  // News
+  getNews: () => api.authFetch('/news'),
+  createNews: (data: any) => api.authFetch('/news', {
+    method: 'POST', body: JSON.stringify(data)
+  }),
+  
+  // Contacts
+  getContacts: () => api.authFetch('/contacts'),
+  replyContact: (id: number | string, message: string) => api.authFetch(`/contacts/${id}/reply`, {
+    method: 'POST', body: JSON.stringify({ reply_message: message })
+  }),
+
+  // Intakes
+  getIntakes: () => api.authFetch('/intakes'),
+  activateIntake: (id: number | string) => api.authFetch(`/intakes/${id}/activate`, {
+    method: 'POST'
+  }),
+  
+  // Gallery
+  getGallery: () => api.authFetch('/gallery'),
+  
+  // Super Admin only
+  getAdmins: () => api.authFetch('/admins'),
+  createAdmin: (data: any) => api.authFetch('/admins', {
+    method: 'POST', body: JSON.stringify(data)
+  }),
+  getLogs: () => api.authFetch('/logs'),
+}
+
+export default api

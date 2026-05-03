@@ -1,0 +1,46 @@
+# ===========================
+# Node / Frontend
+# ===========================
+node_modules/
+.next/
+dist/
+build/
+.cache/
+*.local
+
+# ===========================
+# Laravel / PHP Backend
+# ===========================
+backend/vendor/
+backend/.env
+backend/storage/logs/*.log
+backend/storage/framework/cache/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+backend/bootstrap/cache/
+backend/*.key
+backend/.phpunit.result.cache
+
+# ===========================
+# Environment files
+# ===========================
+.env
+.env.local
+.env.*.local
+
+# ===========================
+# OS & Editor
+# ===========================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.log
+
+# ===========================
+# Misc
+# ===========================
+*.zip
+*.tar.gz
