@@ -60,13 +60,28 @@ class GalleryController extends BaseController
         $validator = Validator::make($request->all(), [
             'title' => 'required',
             'category' => 'in:campus,graduation,events,labs,sports,general',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors(), 422);
         }
 
-        $image->update($request->all());
+        $input = $request->all();
+
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($image->image_path) {
+                $oldPath = str_replace(asset('storage/'), '', $image->image_path);
+                Storage::disk('public')->delete($oldPath);
+            }
+
+            $path = $request->file('image')->store('gallery', 'public');
+            $input['image_path'] = asset('storage/' . $path);
+            $input['thumbnail_path'] = asset('storage/' . $path);
+        }
+
+        $image->update($input);
 
         return $this->sendResponse($image, 'Gallery image updated successfully.');
     }

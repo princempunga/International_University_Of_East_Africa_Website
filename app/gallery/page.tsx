@@ -1,33 +1,44 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, Filter, Maximize2, X } from "lucide-react"
+import { Search, Filter, Maximize2, X, Loader2, Image as ImageIcon } from "lucide-react"
 import Image from "next/image"
 
-const categories = ["All", "Campus", "Graduation", "Events", "Labs", "Sports"]
-
-const galleryImages = [
-  { id: 1, src: "/pic1.jfif", alt: "IUEA Campus Life", category: "Campus" },
-  { id: 2, src: "/pic2.jfif", alt: "IUEA Campus Life", category: "Campus" },
-  { id: 3, src: "/pic3.jfif", alt: "IUEA Graduation", category: "Graduation" },
-  { id: 4, src: "/pic4.jpg", alt: "IUEA Graduation", category: "Graduation" },
-  { id: 5, src: "/pic4.jpeg", alt: "IUEA Events", category: "Events" },
-  { id: 6, src: "/pic6.jpg", alt: "IUEA Events", category: "Events" },
-  { id: 7, src: "/pic7.jfif", alt: "IUEA Labs", category: "Labs" },
-  { id: 8, src: "/pic8.jfif", alt: "IUEA Labs", category: "Labs" },
-  { id: 9, src: "/pic9.jpg", alt: "IUEA Sports", category: "Sports" },
-  { id: 10, src: "/pic10.jpg", alt: "IUEA Sports", category: "Sports" },
-  { id: 11, src: "/pic11.jpg", alt: "IUEA Campus Life", category: "Campus" },
-  { id: 12, src: "/pic12.jpg", alt: "IUEA Campus Life", category: "Campus" },
-]
+const categories = ["All", "Campus", "Graduation", "Events", "Labs", "Sports", "General"]
 
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedImage, setSelectedImage] = useState<typeof galleryImages[0] | null>(null)
+  const [images, setImages] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedImage, setSelectedImage] = useState<any | null>(null)
 
-  const filteredImages = galleryImages.filter(
-    img => selectedCategory === "All" || img.category === selectedCategory
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/api/gallery")
+        const data = await res.json()
+        if (data.success) {
+          // Normalize data: ensure src is full URL if needed
+          const normalized = data.data.map((img: any) => ({
+            id: img.id,
+            src: img.image_url || img.image_path, // Handle both potential field names
+            alt: img.title || "IUEA Gallery Image",
+            category: img.category || "General"
+          }))
+          setImages(normalized)
+        }
+      } catch (error) {
+        console.error("Failed to fetch gallery:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchGallery()
+  }, [])
+
+  const filteredImages = images.filter(
+    img => selectedCategory === "All" || img.category.toLowerCase() === selectedCategory.toLowerCase()
   )
 
   return (
@@ -86,24 +97,36 @@ export default function GalleryPage() {
       </section>
 
       {/* Masonry Grid */}
-      <section className="py-20">
+      <section className="py-20 min-h-[400px]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          >
-            <AnimatePresence>
-              {filteredImages.map((image) => (
-                <motion.div
-                  key={image.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.4 }}
-                  className="relative group cursor-pointer aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow"
-                  onClick={() => setSelectedImage(image)}
-                >
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-12 h-12 text-[#8B0000] animate-spin mb-4" />
+              <p className="text-gray-400 font-medium">Loading gallery...</p>
+            </div>
+          ) : filteredImages.length === 0 ? (
+            <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+              <ImageIcon className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No images found</h3>
+              <p className="text-gray-500">There are no images in this category yet.</p>
+            </div>
+          ) : (
+            <motion.div
+              layout
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+              <AnimatePresence>
+                {filteredImages.map((image) => (
+                  <motion.div
+                    key={image.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.4 }}
+                    className="relative group cursor-pointer aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow"
+                    onClick={() => setSelectedImage(image)}
+                  >
                   <img
                     src={image.src}
                     alt={image.alt}
@@ -121,7 +144,8 @@ export default function GalleryPage() {
                 </motion.div>
               ))}
             </AnimatePresence>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </section>
 

@@ -16,27 +16,6 @@ import {
 } from "lucide-react"
 import api from "@/lib/api"
 
-const stats = [
-  { name: "Total Orders (today)", value: "12", icon: ShoppingCart, color: "text-red-600", bg: "bg-red-50", link: "/admin/orders" },
-  { name: "Products in Shop", value: "48", icon: Package, color: "text-amber-600", bg: "bg-amber-50", link: "/admin/products" },
-  { name: "Unread Messages", value: "3", icon: Mail, color: "text-blue-600", bg: "bg-blue-50", link: "/admin/messages" },
-  { name: "Active Intake", value: "Jan 2026", icon: GraduationCap, color: "text-green-600", bg: "bg-green-50", link: "/admin/intakes" },
-]
-
-const recentOrders = [
-  { id: "#ORD-7231", customer: "John Doe", amount: "UGX 75,000", status: "pending", date: "2 mins ago" },
-  { id: "#ORD-7230", customer: "Alice Nakato", amount: "UGX 150,000", status: "processing", date: "15 mins ago" },
-  { id: "#ORD-7229", customer: "Samuel Okello", amount: "UGX 25,000", status: "delivered", date: "1 hour ago" },
-  { id: "#ORD-7228", customer: "Sarah B.", amount: "UGX 45,000", status: "delivered", date: "3 hours ago" },
-  { id: "#ORD-7227", customer: "James P.", amount: "UGX 10,000", status: "cancelled", date: "5 hours ago" },
-]
-
-const recentMessages = [
-  { id: 1, name: "Maria Kemigisa", subject: "Inquiry about Jan Intake", date: "10:30 AM" },
-  { id: 2, name: "David Ssemwanga", subject: "Product Support - Hoodie", date: "Yesterday" },
-  { id: 3, name: "Blessing K.", subject: "Alumni Membership", date: "2 days ago" },
-]
-
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -53,25 +32,63 @@ const item = {
 }
 
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [stats, setStats] = useState<any[]>([])
+  const [recentOrders, setRecentOrders] = useState<any[]>([])
+  const [recentMessages, setRecentMessages] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await api.getStats()
-        if (response.success) {
-          setDashboardData(response.data)
-        }
-      } catch (error) {
-        console.error("Failed to fetch dashboard stats")
-      } finally {
-        setIsLoading(false)
+  const fetchDashboardData = async () => {
+    try {
+      const statsRes = await api.getStats()
+      if (statsRes.success) {
+        const s = statsRes.data
+        setStats([
+          { name: "Total Orders", value: s.total_orders, icon: ShoppingCart, color: "text-red-600", bg: "bg-red-50", link: "/admin/orders" },
+          { name: "Products in Shop", value: s.total_products, icon: Package, color: "text-amber-600", bg: "bg-amber-50", link: "/admin/products" },
+          { name: "Total Revenue", value: `UGX ${s.total_revenue?.toLocaleString() || 0}`, icon: ArrowUpRight, color: "text-blue-600", bg: "bg-blue-50", link: "/admin/orders" },
+          { name: "Active Intake", value: s.active_intake?.name || "None", icon: GraduationCap, color: "text-green-600", bg: "bg-green-50", link: "/admin/intakes" },
+        ])
       }
-    }
 
+      const ordersRes = await api.getOrders()
+      if (ordersRes.success) {
+        setRecentOrders(ordersRes.data.slice(0, 5).map((o: any) => ({
+          id: `#${o.order_number}`,
+          customer: o.customer_name,
+          amount: `UGX ${o.total.toLocaleString()}`,
+          status: o.status,
+          date: new Date(o.created_at).toLocaleDateString()
+        })))
+      }
+
+      const messagesRes = await api.getContacts()
+      if (messagesRes.success) {
+        setRecentMessages(messagesRes.data.slice(0, 3).map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          subject: m.subject,
+          date: new Date(m.created_at).toLocaleDateString()
+        })))
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchDashboardData()
   }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 min-h-[400px]">
+        <div className="w-12 h-12 border-4 border-[#8B0000] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-gray-400 font-medium font-serif">Preparing your dashboard...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-10">

@@ -83,7 +83,7 @@ export function Faculties() {
               <Link href={`/academics/faculties/${faculty.slug}`}>
                 <motion.div
                   whileHover="hover"
-                  className="relative block w-full h-[380px] rounded-[20px] overflow-hidden cursor-pointer shadow-sm"
+                  className="relative block w-full h-[250px] sm:h-[380px] rounded-[20px] overflow-hidden cursor-pointer shadow-sm"
                 >
                   {/* Crimson Overlay Animation */}
                   <motion.div 
@@ -157,7 +157,7 @@ export function Faculties() {
                     <div className="flex items-center gap-2 text-[13px] text-[#E8B84B] font-medium mb-4">
                       <span>{faculty.programs} Programs</span>
                       <span className="w-1 h-1 rounded-full bg-[#E8B84B]/50" />
-                      <span>{faculty.students.toLocaleString()} Students</span>
+                      <span>{faculty.students.toLocaleString('en-US')} Students</span>
                     </div>
 
                     <div className="inline-flex items-center gap-2 text-sm font-medium text-white transition-all">

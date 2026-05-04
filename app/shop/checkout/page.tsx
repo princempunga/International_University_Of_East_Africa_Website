@@ -6,22 +6,74 @@ import { motion, AnimatePresence } from "framer-motion"
 import { CheckCircle2, Truck, CreditCard, ChevronRight, MapPin, Phone, Mail, Building, Landmark, Smartphone } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import api from "@/lib/api"
+import { Loader2, AlertCircle } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart()
   const [step, setStep] = useState(1) // 1: Delivery, 2: Payment, 3: Confirmation
   const [deliveryMethod, setDeliveryMethod] = useState("kampala")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [placedOrder, setPlacedOrder] = useState<any>(null)
+
+  // Form states
+  const [formData, setFormData] = useState({
+    customer_name: "",
+    customer_email: "",
+    customer_phone: "",
+    delivery_address: "",
+    delivery_city: "",
+    notes: ""
+  })
 
   const deliveryFee = deliveryMethod === "pickup" ? 0 : deliveryMethod === "kampala" ? 10000 : 25000
   const vat = cartTotal * 0.18
   const grandTotal = cartTotal + deliveryFee + vat
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (step === 2) {
-      // Simulate order placement
-      setStep(3)
-      clearCart()
+      // Place real order
+      setIsSubmitting(true)
+      setError(null)
+      try {
+        const orderData = {
+          ...formData,
+          delivery_method: deliveryMethod === "pickup" ? "campus_pickup" : deliveryMethod,
+          payment_method: "mtn_momo", // Defaulting to one for now
+          items: cart.map(item => ({
+            product_id: item.id,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color
+          }))
+        }
+
+        const res = await fetch("http://localhost:8000/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(orderData)
+        })
+        const data = await res.json()
+
+        if (!res.ok) throw new Error(data.message || "Failed to place order")
+
+        setPlacedOrder(data.data)
+        setStep(3)
+        clearCart()
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setIsSubmitting(false)
+      }
     } else {
+      // Basic validation for step 1
+      if (step === 1 && (!formData.customer_name || !formData.customer_email || !formData.customer_phone)) {
+        setError("Please fill in all required fields.")
+        return
+      }
+      setError(null)
       setStep(step + 1)
     }
     window.scrollTo(0, 0)
@@ -75,39 +127,71 @@ export default function CheckoutPage() {
                         <MapPin className="w-6 h-6 text-[#8B0000]" />
                         Delivery Information
                       </h2>
+
+                      {error && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm font-medium">
+                          <AlertCircle className="w-5 h-5" />
+                          {error}
+                        </div>
+                      )}
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                         <div className="space-y-2">
-                          <label className="text-sm font-bold text-gray-600">First Name</label>
-                          <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" placeholder="John" />
+                          <label className="text-sm font-bold text-gray-600">Full Name <span className="text-red-500">*</span></label>
+                          <input 
+                            type="text" 
+                            required
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" 
+                            placeholder="John Doe" 
+                            value={formData.customer_name}
+                            onChange={(e) => setFormData({...formData, customer_name: e.target.value})}
+                          />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-bold text-gray-600">Last Name</label>
-                          <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" placeholder="Doe" />
+                          <label className="text-sm font-bold text-gray-600">Email Address <span className="text-red-500">*</span></label>
+                          <input 
+                            type="email" 
+                            required
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" 
+                            placeholder="john@example.com" 
+                            value={formData.customer_email}
+                            onChange={(e) => setFormData({...formData, customer_email: e.target.value})}
+                          />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-sm font-bold text-gray-600">Email Address</label>
-                          <input type="email" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" placeholder="john@example.com" />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-bold text-gray-600">Phone Number</label>
-                          <input type="tel" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" placeholder="+256 700 000 000" />
+                          <label className="text-sm font-bold text-gray-600">Phone Number <span className="text-red-500">*</span></label>
+                          <input 
+                            type="tel" 
+                            required
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" 
+                            placeholder="+256 700 000 000" 
+                            value={formData.customer_phone}
+                            onChange={(e) => setFormData({...formData, customer_phone: e.target.value})}
+                          />
                         </div>
                       </div>
 
                       <div className="space-y-6">
                         <div className="space-y-2">
                           <label className="text-sm font-bold text-gray-600">Street Address</label>
-                          <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" placeholder="Apt, Suite, Building, Street" />
+                          <input 
+                            type="text" 
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" 
+                            placeholder="Apt, Suite, Building, Street" 
+                            value={formData.delivery_address}
+                            onChange={(e) => setFormData({...formData, delivery_address: e.target.value})}
+                          />
                         </div>
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-600">City</label>
-                            <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" placeholder="Kampala" />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-600">District</label>
-                            <input type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" placeholder="Central" />
+                            <label className="text-sm font-bold text-gray-600">City / District</label>
+                            <input 
+                              type="text" 
+                              className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20" 
+                              placeholder="Kampala" 
+                              value={formData.delivery_city}
+                              onChange={(e) => setFormData({...formData, delivery_city: e.target.value})}
+                            />
                           </div>
                         </div>
                       </div>
@@ -280,7 +364,7 @@ export default function CheckoutPage() {
                       onClick={handleNextStep}
                       className="w-full py-5 bg-[#8B0000] text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-[#6B0000] transition-all"
                     >
-                      Complete Payment: UGX {grandTotal.toLocaleString()}
+                      Complete Payment: UGX {formatCurrency(grandTotal)}
                     </button>
                   </motion.div>
                 )}
@@ -345,7 +429,7 @@ export default function CheckoutPage() {
                           <p className="text-xs font-bold truncate">{item.name}</p>
                           <p className="text-[10px] text-gray-500">Qty: {item.quantity} • {item.size || "Standard"}</p>
                         </div>
-                        <p className="text-xs font-bold">UGX {(item.price * item.quantity).toLocaleString()}</p>
+                        <p className="text-xs font-bold">UGX {formatCurrency(item.price * item.quantity)}</p>
                       </div>
                     ))}
                   </div>
@@ -353,19 +437,19 @@ export default function CheckoutPage() {
                   <div className="space-y-3 pt-6 border-t border-dashed">
                     <div className="flex justify-between text-xs font-medium text-gray-500">
                       <span>Subtotal</span>
-                      <span>UGX {cartTotal.toLocaleString()}</span>
+                      <span>UGX {formatCurrency(cartTotal)}</span>
                     </div>
                     <div className="flex justify-between text-xs font-medium text-gray-500">
                       <span>Delivery Fee</span>
-                      <span>UGX {deliveryFee.toLocaleString()}</span>
+                      <span>UGX {formatCurrency(deliveryFee)}</span>
                     </div>
                     <div className="flex justify-between text-xs font-medium text-gray-500">
                       <span>Tax (18% VAT)</span>
-                      <span>UGX {vat.toLocaleString()}</span>
+                      <span>UGX {formatCurrency(vat)}</span>
                     </div>
                     <div className="flex justify-between items-end pt-3 text-[#8B0000]">
                       <span className="text-sm font-bold">Grand Total</span>
-                      <span className="text-xl font-bold">UGX {grandTotal.toLocaleString()}</span>
+                      <span className="text-xl font-bold">UGX {formatCurrency(grandTotal)}</span>
                     </div>
                   </div>
                 </div>

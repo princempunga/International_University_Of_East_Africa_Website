@@ -238,17 +238,11 @@ export default function UsersPage() {
   const handleToggle = async (admin: Admin) => {
     setTogglingId(admin.id)
     try {
-      const res = await fetch(`http://localhost:8000/api/admins/${admin.id}/toggle`, {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
-        },
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json?.message || "Failed to update status")
-      setAdmins(prev => prev.map(a => a.id === admin.id ? json.data : a))
-      showToast(`${admin.name} has been ${json.data.is_active ? "activated" : "deactivated"}.`)
+      const response = await api.toggleAdmin(admin.id)
+      if (response?.success) {
+        setAdmins(prev => prev.map(a => a.id === admin.id ? response.data : a))
+        showToast(`${admin.name} has been ${response.data.is_active ? "activated" : "deactivated"}.`)
+      }
     } catch (err: any) {
       showToast(err.message || "Failed to toggle status", "error")
     } finally {
@@ -261,18 +255,12 @@ export default function UsersPage() {
     if (!showDelete) return
     setIsDeleting(true)
     try {
-      const res = await fetch(`http://localhost:8000/api/admins/${showDelete.id}`, {
-        method: "DELETE",
-        headers: {
-          Accept: "application/json",
-          ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
-        },
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json?.message || "Delete failed")
-      setAdmins(prev => prev.filter(a => a.id !== showDelete.id))
-      setShowDelete(null)
-      showToast("Admin account deleted.")
+      const response = await api.deleteAdmin(showDelete.id)
+      if (response?.success) {
+        setAdmins(prev => prev.filter(a => a.id !== showDelete.id))
+        setShowDelete(null)
+        showToast("Admin account deleted.")
+      }
     } catch (err: any) {
       showToast(err.message || "Failed to delete admin", "error")
       setShowDelete(null)

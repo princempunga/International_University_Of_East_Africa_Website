@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\SuperAdminController;
 // Public routes
 Route::post('/auth/login', [AuthController::class, 'login']);
 
+Route::get('/intakes/published', [IntakeController::class, 'getPublished']);
 Route::get('/intakes/active', [IntakeController::class, 'getActive']);
 
 Route::get('/products', [ProductController::class, 'index']);
@@ -82,6 +83,8 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     
     // Newsletter
     Route::get('/newsletter/subscribers', [NewsletterController::class, 'getSubscribers']);
+
+    Route::get('/stats', [SuperAdminController::class, 'getSystemStats']);
 });
 
 // Super Admin Only
@@ -92,7 +95,6 @@ Route::middleware(['auth:sanctum', 'isSuperAdmin'])->group(function () {
     Route::delete('/admins/{id}', [SuperAdminController::class, 'deleteAdmin']);
     
     Route::get('/logs', [SuperAdminController::class, 'getActivityLogs']);
-    Route::get('/stats', [SuperAdminController::class, 'getSystemStats']);
     Route::get('/settings', [SuperAdminController::class, 'getSettings']);
     Route::put('/settings', [SuperAdminController::class, 'updateSettings']);
 });

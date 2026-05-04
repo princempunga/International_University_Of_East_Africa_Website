@@ -74,18 +74,32 @@ export const api = {
   
   // Products
   getProducts: () => api.authFetch('/products'),
+  getPublicProducts: (params: any = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return fetch(`${API_URL}/products${query ? `?${query}` : ''}`).then(r => r.json())
+  },
+  getProductBySlug: (slug: string) => fetch(`${API_URL}/products/${slug}`).then(r => r.json()),
   createProduct: (data: any) => api.authFetch('/products', { 
     method: 'POST', body: JSON.stringify(data) 
   }),
+
+  // Categories
+  getCategories: () => fetch(`${API_URL}/categories`).then(r => r.json()),
   
   // Orders
   getOrders: () => api.authFetch('/orders'),
+  trackOrder: (orderNumber: string) => fetch(`${API_URL}/orders/track/${orderNumber}`).then(r => r.json()),
   updateOrderStatus: (id: number | string, status: string) => api.authFetch(`/orders/${id}/status`, {
     method: 'PUT', body: JSON.stringify({ status })
   }),
   
   // News
   getNews: () => api.authFetch('/news'),
+  getPublicNews: (params: any = {}) => {
+    const query = new URLSearchParams(params).toString()
+    return fetch(`${API_URL}/news${query ? `?${query}` : ''}`).then(r => r.json())
+  },
+  getNewsBySlug: (slug: string) => fetch(`${API_URL}/news/${slug}`).then(r => r.json()),
   createNews: (data: any) => api.authFetch('/news', {
     method: 'POST', body: JSON.stringify(data)
   }),
@@ -98,6 +112,7 @@ export const api = {
 
   // Intakes
   getIntakes: () => api.authFetch('/intakes'),
+  getPublishedIntakes: () => fetch(`${API_URL}/intakes/published`).then(r => r.json()),
   activateIntake: (id: number | string) => api.authFetch(`/intakes/${id}/activate`, {
     method: 'POST'
   }),
@@ -109,6 +124,12 @@ export const api = {
   getAdmins: () => api.authFetch('/admins'),
   createAdmin: (data: any) => api.authFetch('/admins', {
     method: 'POST', body: JSON.stringify(data)
+  }),
+  toggleAdmin: (id: number | string) => api.authFetch(`/admins/${id}/toggle`, {
+    method: 'PUT'
+  }),
+  deleteAdmin: (id: number | string) => api.authFetch(`/admins/${id}`, {
+    method: 'DELETE'
   }),
   getLogs: () => api.authFetch('/logs'),
 }

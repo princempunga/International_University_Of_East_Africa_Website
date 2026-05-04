@@ -1,47 +1,39 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
-import { Calendar, ArrowRight } from "lucide-react"
-
-const news = [
-  {
-    image: "/JOT_1087.jpg",
-    badge: "Research",
-    date: "April 15, 2026",
-    title: "IUEA Partners with MIT on AI Research Initiative",
-    excerpt: "A groundbreaking partnership that will bring cutting-edge AI research opportunities to East Africa.",
-    href: "/news/mit-partnership",
-  },
-  {
-    image: "/JOT_1091.jpg",
-    badge: "Academic",
-    date: "May 20, 2025",
-    title: "IUEA 2025 Graduation Ceremony Announced",
-    excerpt: "We are proud to announce the dates for our 2025 graduation ceremony, celebrating the achievements of our exceptional students.",
-    href: "/news/graduation-2025-announcement",
-  },
-  {
-    image: "/JOT_1351.jpg",
-    badge: "Achievement",
-    date: "April 5, 2026",
-    title: "Engineering Students Win Regional Innovation Competition",
-    excerpt: "Our team's sustainable energy solution earned top honors at the East African Tech Summit.",
-    href: "/news/innovation-award",
-  },
-  {
-    image: "/JOT_1353.jpg",
-    badge: "Campus",
-    date: "March 28, 2026",
-    title: "New State-of-the-Art Library Opens Its Doors",
-    excerpt: "The modern facility features 24/7 access, collaborative spaces, and over 100,000 volumes.",
-    href: "/news/new-library",
-  },
-]
+import { motion, AnimatePresence } from "framer-motion"
+import { Calendar, ArrowRight, Loader2, Newspaper } from "lucide-react"
+import api from "@/lib/api"
 
 export function NewsEvents() {
+  const [newsItems, setNewsItems] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [email, setEmail] = useState("")
+
+  useEffect(() => {
+    const fetchLatestNews = async () => {
+      try {
+        const res = await api.getPublicNews({ limit: 4, status: 'published' })
+        if (res?.success) {
+          setNewsItems(res.data)
+        }
+      } catch (err) {
+        console.error("Failed to fetch home news:", err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchLatestNews()
+  }, [])
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,7 +62,7 @@ export function NewsEvents() {
           </div>
 
           {/* Newsletter */}
-          <form onSubmit={handleSubscribe} className="flex gap-3">
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
             <input
               type="email"
               placeholder="Enter your email"
@@ -81,7 +73,7 @@ export function NewsEvents() {
             />
             <button
               type="submit"
-              className="px-6 py-3 bg-[#8B0000] text-white font-semibold rounded-lg hover:bg-[#6B0000] transition-colors"
+              className="px-6 py-3 bg-[#8B0000] text-white font-semibold rounded-lg hover:bg-[#6B0000] transition-colors w-full sm:w-auto"
             >
               Join
             </button>
@@ -89,51 +81,72 @@ export function NewsEvents() {
         </motion.div>
 
         {/* News Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {news.map((item, index) => (
-            <motion.article
-              key={item.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -6 }}
-              className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300"
-            >
-              {/* Image Container */}
-              <div className="relative h-[200px] overflow-hidden rounded-t-[12px]">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <span className="absolute top-4 left-4 z-10 px-3 py-1 bg-[#8B0000] text-white text-xs font-semibold rounded-full shadow-sm">
-                  {item.badge}
-                </span>
-              </div>
-
-              {/* Content */}
-              <div className="p-5">
-                <div className="flex items-center gap-2 text-sm text-[#6B5B4F]">
-                  <Calendar className="w-4 h-4" />
-                  {item.date}
-                </div>
-                <h3 className="mt-3 text-lg font-serif font-semibold text-[#1A0A00] line-clamp-2 group-hover:text-[#8B0000] transition-colors">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm text-[#6B5B4F] line-clamp-2 leading-relaxed">
-                  {item.excerpt}
-                </p>
-                <Link
-                  href={item.href}
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#8B0000] transition-all"
+        <div className="min-h-[400px]">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-12 h-12 text-[#8B0000] animate-spin mb-4" />
+              <p className="text-gray-500 font-medium">Loading news...</p>
+            </div>
+          ) : newsItems.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {newsItems.map((item, index) => (
+                <motion.article
+                  key={item.id || item.slug}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -6 }}
+                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col h-full border border-gray-100"
                 >
-                  <span>Read More</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </div>
-            </motion.article>
-          ))}
+                  {/* Image Container */}
+                  <div className="relative h-[200px] overflow-hidden bg-gray-50">
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Newspaper className="w-12 h-12 text-gray-200" />
+                      </div>
+                    )}
+                    <span className="absolute top-4 left-4 z-10 px-3 py-1 bg-[#8B0000] text-white text-[10px] font-black rounded-full shadow-sm uppercase tracking-wider">
+                      {item.category}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6 flex flex-col flex-1">
+                    <div className="flex items-center gap-2 text-xs text-[#6B5B4F] font-medium">
+                      <Calendar className="w-4 h-4" />
+                      {formatDate(item.published_at || item.created_at)}
+                    </div>
+                    <h3 className="mt-3 text-lg font-serif font-bold text-[#1A0A00] line-clamp-2 group-hover:text-[#8B0000] transition-colors leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="mt-3 text-sm text-[#6B5B4F] line-clamp-2 leading-relaxed flex-1">
+                      {item.excerpt}
+                    </p>
+                    <Link
+                      href={`/news/${item.slug}`}
+                      className="mt-6 inline-flex items-center gap-2 text-xs font-black text-[#8B0000] transition-all uppercase tracking-widest"
+                    >
+                      <span>Read More</span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 bg-gray-50 rounded-3xl">
+              <Newspaper className="w-16 h-16 text-gray-200 mx-auto mb-4" />
+              <h3 className="text-xl font-serif font-bold text-gray-800">No recent news</h3>
+              <p className="text-gray-500">Check back later for university updates.</p>
+            </div>
+          )}
         </div>
       </div>
     </section>

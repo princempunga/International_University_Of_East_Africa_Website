@@ -52,13 +52,14 @@ export function Footer() {
   return (
     <footer className="bg-[#2D2D2D] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 text-center sm:text-left">
           {/* Column 1: Logo & Social */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="flex flex-col items-center sm:items-start"
           >
             <Link href="/" className="inline-block bg-white p-4 rounded-2xl mb-2">
               <div className="relative w-48 h-10">
@@ -73,7 +74,7 @@ export function Footer() {
             <p className="mt-6 text-white/70 text-sm leading-relaxed">
               International University of East Africa — Transforming lives through quality education since 2011.
             </p>
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-6 flex items-center justify-center sm:justify-start gap-3">
               {socials.map((social) => (
                 <a
                   key={social.label}
@@ -154,17 +155,17 @@ export function Footer() {
           >
             <h3 className="text-lg font-semibold mb-6">Contact Us</h3>
             <ul className="space-y-4 text-white/70">
-              <li className="flex items-start gap-3">
+              <li className="flex items-start justify-center sm:justify-start gap-3">
                 <MapPin className="w-5 h-5 shrink-0 text-[#E8B84B]" />
-                <span>Plot No. 1112/1121, Kansanga Ggaba Road, Kampala, Uganda</span>
+                <span className="max-w-[250px] sm:max-w-none">Plot No. 1112/1121, Kansanga Ggaba Road, Kampala, Uganda</span>
               </li>
-              <li className="flex items-center gap-3">
+              <li className="flex items-center justify-center sm:justify-start gap-3">
                 <Phone className="w-5 h-5 shrink-0 text-[#E8B84B]" />
                 <a href="tel:800335335" className="hover:text-[#E8B84B]">
                   800 335 335
                 </a>
               </li>
-              <li className="flex items-center gap-3">
+              <li className="flex items-center justify-center sm:justify-start gap-3">
                 <Mail className="w-5 h-5 shrink-0 text-[#E8B84B]" />
                 <a href="mailto:info@iuea.ac.ug" className="hover:text-[#E8B84B]">
                   info@iuea.ac.ug
@@ -173,9 +174,9 @@ export function Footer() {
             </ul>
 
             {/* Newsletter */}
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col items-center sm:items-start">
               <h4 className="text-sm font-semibold mb-3">Stay Updated</h4>
-              <form onSubmit={handleSubscribe} className="flex">
+              <form onSubmit={handleSubscribe} className="flex w-full max-w-sm sm:max-w-none">
                 <input
                   type="email"
                   placeholder="Your email"

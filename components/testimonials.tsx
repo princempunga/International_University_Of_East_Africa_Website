@@ -104,13 +104,13 @@ export function Testimonials() {
               className="text-center"
             >
               {/* Quote */}
-              <p className="text-xl sm:text-2xl lg:text-3xl font-serif italic text-[#1A0A00] leading-relaxed">
+              <p className="text-lg sm:text-2xl lg:text-3xl font-serif italic text-[#1A0A00] leading-relaxed px-2">
                 &ldquo;{testimonials[current].quote}&rdquo;
               </p>
 
               {/* Author */}
               <div className="mt-10 flex flex-col items-center">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden ring-4 ring-[#8B0000]/20">
+                <div className="relative w-[60px] h-[60px] rounded-full overflow-hidden ring-4 ring-[#8B0000]/20">
                   <Image
                     src={testimonials[current].image}
                     alt={testimonials[current].name}
@@ -140,7 +140,7 @@ export function Testimonials() {
             </button>
 
             {/* Dots */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
@@ -148,10 +148,10 @@ export function Testimonials() {
                     setDirection(index > current ? 1 : -1)
                     setCurrent(index)
                   }}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  className={`h-1.5 rounded-full transition-all ${
                     index === current 
-                      ? "bg-[#8B0000] w-8" 
-                      : "bg-[#E8E0D5] hover:bg-[#8B0000]/30"
+                      ? "bg-[#8B0000] w-6 sm:w-8" 
+                      : "bg-[#E8E0D5] w-1.5 sm:w-2.5"
                   }`}
                   aria-label={`Go to testimonial ${index + 1}`}
                 />

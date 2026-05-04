@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Package, Plus, Search, Edit, Trash2, X, Loader2, CheckCircle2, AlertTriangle, Image as ImageIcon, ToggleLeft, ToggleRight } from "lucide-react"
 import api from "@/lib/api"
 import Image from "next/image"
+import { formatCurrency } from "@/lib/utils"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Category = { id: number; name: string }
@@ -232,7 +233,7 @@ function ProductForm({
         >
           <ImageIcon className="w-6 h-6" />
           <span className="text-sm font-bold">Click to upload images</span>
-          <span className="text-xs">JPG, PNG, WebP — Max 5MB each</span>
+          <span className="text-xs">JPG, PNG, WebP — Max 20MB each</span>
         </button>
         <input ref={fileRef} type="file" multiple accept="image/jpg,image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageChange} />
       </div>
@@ -313,7 +314,10 @@ export default function ProductsPage() {
         body: fd,
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || Object.values(data?.errors || {}).flat().join(" ") || "Failed to create product")
+      if (!res.ok) {
+        const detailErrors = data?.errors ? Object.values(data.errors).flat().join(" ") : null
+        throw new Error(detailErrors || data?.message || "Failed to create product")
+      }
       setProducts(prev => [data.data, ...prev])
       setShowCreate(false)
       showToast("Product added successfully!")
@@ -341,7 +345,10 @@ export default function ProductsPage() {
         body: fd,
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || Object.values(data?.errors || {}).flat().join(" ") || "Failed to update product")
+      if (!res.ok) {
+        const detailErrors = data?.errors ? Object.values(data.errors).flat().join(" ") : null
+        throw new Error(detailErrors || data?.message || "Failed to update product")
+      }
       setProducts(prev => prev.map(p => (p.id === showEdit.id ? data.data : p)))
       setShowEdit(null)
       showToast("Product updated successfully!")
@@ -495,7 +502,7 @@ export default function ProductsPage() {
                       </td>
                       {/* Price */}
                       <td className="px-8 py-5 font-bold text-sm text-[#1A0A00]">
-                        UGX {product.price?.toLocaleString()}
+                        UGX {formatCurrency(product.price)}
                       </td>
                       {/* Stock */}
                       <td className="px-8 py-5">

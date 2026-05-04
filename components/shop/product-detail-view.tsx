@@ -9,6 +9,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ProductCard } from "./product-card"
 import { useRouter } from "next/navigation"
+import { formatCurrency } from "@/lib/utils"
 
 export function ProductDetailView({ product, relatedProducts }: { product: Product, relatedProducts: Product[] }) {
   const { addToCart, showToast } = useCart()
@@ -18,14 +19,14 @@ export function ProductDetailView({ product, relatedProducts }: { product: Produ
   const [selectedColor, setSelectedColor] = useState(product.colors ? product.colors[0] : "")
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState("Description")
-  const [mainImage, setMainImage] = useState(product.image)
+  const [mainImage, setMainImage] = useState(product.images?.[0] || product.image)
 
   const handleAddToCart = () => {
     addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: product.images?.[0] || product.image,
       quantity,
       category: product.category,
       slug: product.slug,
@@ -76,7 +77,7 @@ export function ProductDetailView({ product, relatedProducts }: { product: Produ
           </motion.div>
           
           <div className="grid grid-cols-4 gap-4">
-            {[product.image, ...Array(3).fill(product.image)].map((img, i) => (
+            {(product.images && product.images.length > 0 ? product.images : [product.image]).map((img, i) => (
               <button
                 key={i}
                 onClick={() => setMainImage(img)}
@@ -131,11 +132,11 @@ export function ProductDetailView({ product, relatedProducts }: { product: Produ
 
           <div className="flex items-baseline gap-3 mb-8">
             <span className="text-4xl font-bold text-[#8B0000]">
-              UGX {product.price.toLocaleString()}
+              UGX {formatCurrency(product.price)}
             </span>
             {product.originalPrice && (
               <span className="text-xl text-gray-400 line-through">
-                UGX {product.originalPrice.toLocaleString()}
+                UGX {formatCurrency(product.originalPrice)}
               </span>
             )}
           </div>

@@ -176,16 +176,11 @@ class OrderController extends BaseController
 
     public function track($orderNumber): JsonResponse
     {
-        $order = Order::where('order_number', $orderNumber)->first();
+        $order = Order::with('items')->where('order_number', $orderNumber)->first();
         if (!$order) {
             return $this->sendError('Order not found.');
         }
 
-        return $this->sendResponse([
-            'order_number' => $order->order_number,
-            'order_status' => $order->order_status,
-            'payment_status' => $order->payment_status,
-            'updated_at' => $order->updated_at,
-        ], 'Order tracking data retrieved.');
+        return $this->sendResponse($order, 'Order tracking data retrieved.');
     }
 }

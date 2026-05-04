@@ -27,14 +27,14 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 
-const navItems = [
+const navItemsData = [
   { name: "Dashboard",    href: "/admin/dashboard",  icon: LayoutDashboard },
   { name: "Intakes",      href: "/admin/intakes",    icon: Calendar },
   { name: "Shop Products",href: "/admin/products",   icon: ShoppingBag },
   { name: "Orders",       href: "/admin/orders",     icon: Package },
   { name: "News & Events",href: "/admin/news",       icon: Newspaper },
   { name: "Gallery",      href: "/admin/gallery",    icon: ImageIcon },
-  { name: "Messages",     href: "/admin/messages",   icon: Mail, badge: 3 },
+  { name: "Messages",     href: "/admin/messages",   icon: Mail },
   { name: "Newsletter",   href: "/admin/newsletter", icon: Send },
 ]
 
@@ -44,26 +44,95 @@ const superAdminItems = [
   { name: "Activity Logs", href: "/admin/logs",     icon: ClipboardList },
 ]
 
-// ── Sample notifications ──────────────────────────────────────────────────────
-const SAMPLE_NOTIFICATIONS = [
-  { id: 1, icon: Mail,          color: "bg-blue-100 text-blue-600",   title: "New message received",          desc: "Maria Kemigisa sent a new inquiry",        time: "2 min ago",   unread: true },
-  { id: 2, icon: ShoppingCart,  color: "bg-amber-100 text-amber-600", title: "New order placed",               desc: "Order #ORD-7231 — UGX 75,000",            time: "15 min ago",  unread: true },
-  { id: 3, icon: Mail,          color: "bg-blue-100 text-blue-600",   title: "New message received",          desc: "David Ssemwanga: Product Support",        time: "1 hour ago",  unread: true },
-  { id: 4, icon: Calendar,      color: "bg-green-100 text-green-600", title: "Intake application submitted",   desc: "January 2026 intake — new applicant",   time: "3 hours ago", unread: false },
-  { id: 5, icon: ShoppingCart,  color: "bg-amber-100 text-amber-600", title: "Order delivered",               desc: "Order #ORD-7229 marked as delivered",    time: "5 hours ago", unread: false },
-]
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, isLoading, logout, role } = useAuth()
   const router   = useRouter()
   const pathname = usePathname()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
-  // ── Notifications ──
+  // ── Real Data for Notifications & Badges ──
   const [showNotifications, setShowNotifications] = useState(false)
-  const [notifications, setNotifications] = useState(SAMPLE_NOTIFICATIONS)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
+  
   const bellRef = useRef<HTMLDivElement>(null)
-  const unreadCount = notifications.filter(n => n.unread).length
+  const unreadNotifCount = notifications.filter(n => n.unread).length
+
+  const fetchDynamicData = async () => {
+    const token = localStorage.getItem("iuea_token")
+    if (!token) return
+
+    try {
+      // 1. Fetch Contacts
+      const contactRes = await fetch("http://localhost:8000/api/contacts", {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
+      })
+      const contactData = await contactRes.json()
+      
+      let newNotifs: any[] = []
+
+      if (contactData.success) {
+        const messages = contactData.data
+        const unreadMsg = messages.filter((m: any) => m.status === "unread")
+        setUnreadMessagesCount(unreadMsg.length)
+
+        const messageNotifs = unreadMsg
+          .slice(0, 5)
+          .map((m: any) => ({
+            id: `msg-${m.id}`,
+            icon: Mail,
+            color: "bg-blue-100 text-blue-600",
+            title: "New Message",
+            desc: `${m.name}: ${m.subject}`,
+            time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            unread: true,
+            link: "/admin/messages",
+            timestamp: new Date(m.created_at).getTime()
+          }))
+        newNotifs = [...newNotifs, ...messageNotifs]
+      }
+
+      // 2. Fetch Orders
+      const orderRes = await fetch("http://localhost:8000/api/orders", {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
+      })
+      const orderData = await orderRes.json()
+
+      if (orderData.success) {
+        const orders = orderData.data
+        const pendingOrders = orders.filter((o: any) => o.status === "pending")
+        
+        const orderNotifs = pendingOrders
+          .slice(0, 5)
+          .map((o: any) => ({
+            id: `ord-${o.id}`,
+            icon: ShoppingCart,
+            color: "bg-amber-100 text-amber-600",
+            title: "New Order",
+            desc: `Order #${o.order_number} by ${o.customer_name}`,
+            time: new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            unread: true,
+            link: "/admin/orders",
+            timestamp: new Date(o.created_at).getTime()
+          }))
+        newNotifs = [...newNotifs, ...orderNotifs]
+      }
+
+      // Sort by latest and set
+      setNotifications(newNotifs.sort((a, b) => b.timestamp - a.timestamp))
+
+    } catch (e) {
+      console.error("Failed to fetch notification data", e)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchDynamicData()
+      const interval = setInterval(fetchDynamicData, 30000) 
+      return () => clearInterval(interval)
+    }
+  }, [isAuthenticated])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -79,7 +148,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const markAllRead = () =>
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })))
 
-  const dismissNotification = (id: number) =>
+  const dismissNotification = (id: string) =>
     setNotifications(prev => prev.filter(n => n.id !== id))
 
   useEffect(() => {
@@ -99,13 +168,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const activeItem =
-    [...navItems, ...superAdminItems].find(item => pathname === item.href)?.name || "Admin Panel"
+    [...navItemsData, ...superAdminItems].find(item => pathname === item.href)?.name || "Admin Panel"
 
   const initials = user?.name?.split(" ").map((n: string) => n[0]).join("") || "A"
 
   // ── Nav link ────────────────────────────────────────────────────────────────
-  const NavLink = ({ item }: { item: typeof navItems[0] }) => {
+  const NavLink = ({ item }: { item: any }) => {
     const isActive = pathname === item.href
+    const badgeCount = item.name === "Messages" ? unreadMessagesCount : 0
+
     return (
       <Link
         href={item.href}
@@ -127,9 +198,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {isSidebarOpen && (
           <span className="text-sm flex-1 truncate">{item.name}</span>
         )}
-        {isSidebarOpen && (item as any).badge && (
+        {isSidebarOpen && badgeCount > 0 && (
           <span className="bg-[#E8B84B] text-[#8B0000] text-[10px] font-black px-2 py-0.5 rounded-full">
-            {(item as any).badge}
+            {badgeCount}
           </span>
         )}
       </Link>
@@ -182,7 +253,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 Management
               </p>
             )}
-            {navItems.map(item => <NavLink key={item.name} item={item} />)}
+            {navItemsData.map(item => <NavLink key={item.name} item={item} />)}
           </div>
 
           {/* System section (super admin) */}
@@ -249,9 +320,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 }`}
               >
                 <Bell className="w-5 h-5" />
-                {unreadCount > 0 && (
+                {unreadNotifCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#8B0000] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white">
-                    {unreadCount}
+                    {unreadNotifCount}
                   </span>
                 )}
               </button>
@@ -263,12 +334,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
                     <div>
                       <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
-                      {unreadCount > 0 && (
-                        <p className="text-[10px] text-gray-400 font-medium">{unreadCount} unread</p>
+                      {unreadNotifCount > 0 && (
+                        <p className="text-[10px] text-gray-400 font-medium">{unreadNotifCount} unread</p>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      {unreadCount > 0 && (
+                      {unreadNotifCount > 0 && (
                         <button
                           onClick={markAllRead}
                           className="flex items-center gap-1 text-[10px] font-black text-[#8B0000] hover:underline uppercase tracking-wider"

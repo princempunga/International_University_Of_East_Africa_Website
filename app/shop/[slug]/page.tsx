@@ -1,28 +1,42 @@
-import { products } from "@/data/products"
 import { ProductDetailView } from "@/components/shop/product-detail-view"
 import { notFound } from "next/navigation"
+import api from "@/lib/api"
+import { transformProduct } from "@/lib/utils"
 
 interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-export function generateStaticParams() {
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
-}
-
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params
-  const product = products.find((p) => p.slug === slug)
+  
+  let product = null
+  let relatedProducts = []
+
+  try {
+    const res = await api.getProductBySlug(slug)
+    if (res?.success) {
+      product = transformProduct(res.data)
+      
+      // Fetch related products (same category)
+      const relatedRes = await api.getPublicProducts({ 
+        category_id: res.data.category_id,
+        status: 'active'
+      })
+      if (relatedRes?.success) {
+        relatedProducts = relatedRes.data
+          .filter((p: any) => p.id !== res.data.id)
+          .slice(0, 4)
+          .map(transformProduct)
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching product:", error)
+  }
 
   if (!product) {
     notFound()
   }
-
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4)
 
   return (
     <main className="min-h-screen bg-white">

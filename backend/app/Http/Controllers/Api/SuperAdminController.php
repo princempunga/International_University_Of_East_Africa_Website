@@ -35,6 +35,7 @@ class SuperAdminController extends BaseController
         $input = $request->all();
         $input['password'] = \Hash::make($input['password']);
         $input['role'] = 'admin';
+        $input['is_active'] = true; // Explicitly set as active
         $input['created_by'] = $request->user()->id;
 
         $user = User::create($input);
@@ -49,10 +50,11 @@ class SuperAdminController extends BaseController
             return $this->sendError('Error.', ['error' => 'Cannot toggle super admin status.'], 403);
         }
 
-        $user->is_active = !$user->is_active;
+        // Use explicit assignment to avoid any casting issues
+        $user->is_active = $user->is_active ? false : true;
         $user->save();
 
-        return $this->sendResponse($user, 'Admin status updated successfully.');
+        return $this->sendResponse($user->fresh(), 'Admin status updated successfully.');
     }
 
     public function deleteAdmin($id): JsonResponse

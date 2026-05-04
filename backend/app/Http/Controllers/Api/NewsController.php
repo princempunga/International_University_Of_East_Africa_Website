@@ -44,7 +44,7 @@ class NewsController extends BaseController
             'content' => 'required',
             'excerpt' => 'required',
             'category' => 'required|in:news,events,research,campus,achievement',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:20480',
         ]);
 
         if ($validator->fails()) {
@@ -54,6 +54,10 @@ class NewsController extends BaseController
         $input = $request->all();
         $input['slug'] = Str::slug($request->title) . '-' . uniqid();
         $input['author_id'] = $request->user()->id;
+        
+        if (isset($input['status']) && $input['status'] === 'published') {
+            $input['published_at'] = now();
+        }
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('news', 'public');
@@ -61,6 +65,7 @@ class NewsController extends BaseController
         }
 
         $news = News::create($input);
+        $news->load('author');
 
         return $this->sendResponse($news, 'News created successfully.');
     }
@@ -90,6 +95,13 @@ class NewsController extends BaseController
         }
 
         $input = $request->all();
+
+        if (isset($input['status']) && $input['status'] === 'published' && !$news->published_at) {
+            $input['published_at'] = now();
+        } elseif (isset($input['status']) && $input['status'] === 'draft') {
+            $input['published_at'] = null;
+        }
+
         if ($request->hasFile('image')) {
             // Delete old image
             if ($news->featured_image) {
@@ -101,6 +113,7 @@ class NewsController extends BaseController
         }
 
         $news->update($input);
+        $news->load('author');
 
         return $this->sendResponse($news, 'News updated successfully.');
     }

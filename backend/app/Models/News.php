@@ -26,6 +26,13 @@ class News extends Model
         'is_featured' => 'boolean',
     ];
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        return $this->featured_image;
+    }
+
     public function author()
     {
         return $this->belongsTo(User::class, 'author_id');

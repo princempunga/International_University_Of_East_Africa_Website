@@ -81,27 +81,27 @@ function StatItem({ icon: Icon, value, suffix, label, index }: {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="flex flex-col items-center text-center"
+      className="flex flex-col items-center text-center p-4"
     >
-      <Icon className="w-8 h-8 text-[#E8B84B] mb-3" />
-      <div className="text-3xl sm:text-4xl font-bold text-white">
+      <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-[#E8B84B] mb-2 sm:mb-3" />
+      <div className="text-2xl sm:text-4xl font-bold text-white">
         {count.toLocaleString()}{suffix}
       </div>
-      <div className="text-sm text-white/80 mt-1">{label}</div>
+      <div className="text-xs sm:text-sm text-white/80 mt-1">{label}</div>
     </motion.div>
   )
 }
 
 export function StatsBar() {
   return (
-    <section className="bg-[#8B0000] py-12 sm:py-16">
+    <section className="bg-[#8B0000] py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8">
           {stats.map((stat, index) => (
             <div key={stat.label} className="relative flex justify-center">
               <StatItem {...stat} index={index} />
               {index < stats.length - 1 && (
-                <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 w-px h-16 bg-[#E8B84B]/30" />
+                <div className="hidden lg:block absolute right-[-2px] top-1/2 -translate-y-1/2 w-px h-16 bg-[#E8B84B]/30" />
               )}
             </div>
           ))}

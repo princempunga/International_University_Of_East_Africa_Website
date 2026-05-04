@@ -89,13 +89,13 @@ export function StudentLife() {
           {/* Navigation Buttons */}
           <button
             onClick={prevSlide}
-            className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-[#8B0000] hover:scale-110 transition-transform hidden md:flex"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center text-[#8B0000] active:scale-95 transition-all md:left-[-20px] md:w-12 md:h-12"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-[#8B0000] hover:scale-110 transition-transform hidden md:flex"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center text-[#8B0000] active:scale-95 transition-all md:right-[-20px] md:w-12 md:h-12"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
@@ -103,7 +103,7 @@ export function StudentLife() {
           {/* Grid Layout for Fade + Scale Transition */}
           <div className="grid gap-5" style={{ gridTemplateColumns: `repeat(${visibleCount}, 1fr)` }}>
             {visibleImages.map((image, i) => (
-              <div key={i} className="relative h-[320px] rounded-[16px] overflow-hidden group cursor-pointer bg-gray-100">
+              <div key={i} className="relative h-[400px] sm:h-[320px] rounded-[16px] overflow-hidden group cursor-pointer bg-gray-100">
                 <AnimatePresence mode="popLayout" initial={false}>
                   <motion.div
                     key={image.url}

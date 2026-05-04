@@ -1,46 +1,102 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Calendar as CalendarIcon, Clock, Bell, Download, ChevronRight, FileText, CheckCircle2 } from "lucide-react"
+import { Calendar as CalendarIcon, Clock, Bell, Download, ChevronRight, FileText, CheckCircle2, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-
-const sessions = [
-  {
-    name: "January Intake 2026",
-    status: "Upcoming",
-    dates: [
-      { event: "Orientation", date: "Jan 12 - 16" },
-      { event: "Lectures Begin", date: "Jan 19" },
-      { event: "Late Reg. Deadline", date: "Feb 06" },
-      { event: "Mid-Semester", date: "Mar 09 - 13" },
-      { event: "Final Exams", date: "Apr 20 - May 01" },
-    ]
-  },
-  {
-    name: "May Intake 2025",
-    status: "Active",
-    dates: [
-      { event: "Orientation", date: "May 12 - 16" },
-      { event: "Lectures Begin", date: "May 19" },
-      { event: "Mid-Semester", date: "Jul 07 - 11" },
-      { event: "Final Exams", date: "Aug 18 - 29" },
-      { event: "Graduation", date: "Dec 15" },
-    ]
-  },
-  {
-    name: "Aug/Sept Intake 2025",
-    status: "Upcoming",
-    dates: [
-      { event: "Registration", date: "Aug 25 - 29" },
-      { event: "Lectures Begin", date: "Sep 01" },
-      { event: "Guild Elections", date: "Oct 15" },
-      { event: "End Sem Exams", date: "Dec 01 - 12" },
-    ]
-  }
-]
+import api from "@/lib/api"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 
 export default function CalendarPage() {
+  const [intakes, setIntakes] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchIntakes = async () => {
+      try {
+        const response = await api.getPublishedIntakes()
+        if (response?.success) {
+          setIntakes(response.data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch intakes", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchIntakes()
+  }, [])
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "TBA"
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const generatePDF = () => {
+    const doc = new jsPDF()
+
+    // Header
+    doc.setFontSize(22)
+    doc.setTextColor(139, 0, 0)
+    doc.text("International University of East Africa", 105, 20, { align: "center" })
+    
+    doc.setFontSize(16)
+    doc.setTextColor(26, 10, 0)
+    doc.text("Academic Calendar", 105, 30, { align: "center" })
+
+    doc.setFontSize(10)
+    doc.setTextColor(100, 100, 100)
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 105, 38, { align: "center" })
+
+    let startY = 50
+
+    if (intakes.length === 0) {
+      doc.text("No active intakes available at this time.", 105, startY, { align: "center" })
+    }
+
+    intakes.forEach((intake, index) => {
+      if (index > 0) {
+         startY = (doc as any).lastAutoTable.finalY + 15
+         if (startY > 250) {
+           doc.addPage()
+           startY = 20
+         }
+      }
+
+      doc.setFontSize(14)
+      doc.setTextColor(26, 10, 0)
+      doc.text(intake.name + ` (${intake.status.toUpperCase()})`, 14, startY)
+
+      const tableData = []
+      tableData.push(["Application Deadline", formatDate(intake.application_deadline)])
+      if (intake.orientation_date) tableData.push(["Orientation", formatDate(intake.orientation_date)])
+      if (intake.lectures_start_date) tableData.push(["Lectures Begin", formatDate(intake.lectures_start_date)])
+      if (intake.late_registration_deadline) tableData.push(["Late Registration", formatDate(intake.late_registration_deadline)])
+      if (intake.mid_semester_date) tableData.push(["Mid-Semester", formatDate(intake.mid_semester_date)])
+      if (intake.final_exams_date) tableData.push(["Final Exams", formatDate(intake.final_exams_date)])
+      if (intake.graduation_date) tableData.push(["Graduation", formatDate(intake.graduation_date)])
+      tableData.push(["Intake Ends", formatDate(intake.end_date)])
+
+      autoTable(doc, {
+        startY: startY + 5,
+        head: [['Event', 'Date']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [139, 0, 0] },
+        styles: { fontSize: 10, cellPadding: 4 },
+        columnStyles: {
+          0: { cellWidth: 100, fontStyle: 'bold' },
+          1: { cellWidth: 'auto' }
+        }
+      })
+    })
+
+    doc.save("IUEA_Academic_Calendar.pdf")
+  }
+
   return (
     <main className="min-h-screen bg-[#F5F0E8]">
 
@@ -78,38 +134,138 @@ export default function CalendarPage() {
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch overflow-x-auto pb-8 scrollbar-hide">
-            {sessions.map((session, idx) => (
-              <motion.div
-                key={session.name}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="flex-1 min-w-[320px] max-w-[400px] bg-white rounded-3xl p-8 shadow-sm border border-black/5 hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
-                  <h3 className="text-xl font-serif font-bold text-[#1A0A00]">{session.name}</h3>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                    session.status === "Active" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
-                  }`}>
-                    {session.status}
-                  </span>
-                </div>
-                
-                <div className="space-y-4">
-                  {session.dates.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between group">
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 w-full text-gray-500">
+                <Loader2 className="w-8 h-8 animate-spin mb-4 text-[#8B0000]" />
+                <p>Loading academic calendar...</p>
+              </div>
+            ) : intakes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 w-full text-gray-500">
+                <CalendarIcon className="w-12 h-12 mb-4 text-gray-300" />
+                <p>No published intakes at this time.</p>
+              </div>
+            ) : (
+              intakes.map((intake, idx) => (
+                <motion.div
+                  key={intake.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="flex-1 min-w-[320px] max-w-[400px] bg-white rounded-3xl p-8 shadow-sm border border-black/5 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
+                    <h3 className="text-xl font-serif font-bold text-[#1A0A00]">{intake.name}</h3>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                      intake.status === "active" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                    }`}>
+                      {intake.status}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {/* Application Deadline */}
+                    <div className="flex items-center justify-between group">
                       <div className="flex items-center gap-3">
                         <div className="w-1.5 h-1.5 rounded-full bg-[#8B0000] group-hover:scale-150 transition-transform" />
-                        <span className="text-[#1A0A00] text-sm font-medium">{item.event}</span>
+                        <span className="text-[#1A0A00] text-sm font-medium">Application Deadline</span>
                       </div>
                       <span className="text-[#6B5B4F] text-xs font-bold bg-[#F5F0E8] px-2 py-1 rounded-lg">
-                        {item.date}
+                        {formatDate(intake.application_deadline)}
                       </span>
                     </div>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
+
+                    {/* Orientation */}
+                    {intake.orientation_date && (
+                      <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#8B0000] group-hover:scale-150 transition-transform" />
+                          <span className="text-[#1A0A00] text-sm font-medium">Orientation</span>
+                        </div>
+                        <span className="text-[#6B5B4F] text-xs font-bold bg-[#F5F0E8] px-2 py-1 rounded-lg">
+                          {formatDate(intake.orientation_date)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Lectures Begin */}
+                    {intake.lectures_start_date && (
+                      <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#8B0000] group-hover:scale-150 transition-transform" />
+                          <span className="text-[#1A0A00] text-sm font-medium">Lectures Begin</span>
+                        </div>
+                        <span className="text-[#6B5B4F] text-xs font-bold bg-[#F5F0E8] px-2 py-1 rounded-lg">
+                          {formatDate(intake.lectures_start_date)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Late Registration Deadline */}
+                    {intake.late_registration_deadline && (
+                      <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#8B0000] group-hover:scale-150 transition-transform" />
+                          <span className="text-[#1A0A00] text-sm font-medium">Late Registration</span>
+                        </div>
+                        <span className="text-[#6B5B4F] text-xs font-bold bg-[#F5F0E8] px-2 py-1 rounded-lg">
+                          {formatDate(intake.late_registration_deadline)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Mid Semester */}
+                    {intake.mid_semester_date && (
+                      <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#8B0000] group-hover:scale-150 transition-transform" />
+                          <span className="text-[#1A0A00] text-sm font-medium">Mid-Semester</span>
+                        </div>
+                        <span className="text-[#6B5B4F] text-xs font-bold bg-[#F5F0E8] px-2 py-1 rounded-lg">
+                          {formatDate(intake.mid_semester_date)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Final Exams */}
+                    {intake.final_exams_date && (
+                      <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#8B0000] group-hover:scale-150 transition-transform" />
+                          <span className="text-[#1A0A00] text-sm font-medium">Final Exams</span>
+                        </div>
+                        <span className="text-[#6B5B4F] text-xs font-bold bg-[#F5F0E8] px-2 py-1 rounded-lg">
+                          {formatDate(intake.final_exams_date)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Graduation */}
+                    {intake.graduation_date && (
+                      <div className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#8B0000] group-hover:scale-150 transition-transform" />
+                          <span className="text-[#1A0A00] text-sm font-medium">Graduation</span>
+                        </div>
+                        <span className="text-[#6B5B4F] text-xs font-bold bg-[#F5F0E8] px-2 py-1 rounded-lg">
+                          {formatDate(intake.graduation_date)}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* End Date */}
+                    <div className="flex items-center justify-between group pt-2 mt-2 border-t border-gray-50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#8B0000]/30" />
+                        <span className="text-gray-500 text-sm font-medium">Intake Ends</span>
+                      </div>
+                      <span className="text-gray-500 text-xs font-medium">
+                        {formatDate(intake.end_date)}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
 
           {/* Info Grid */}
@@ -128,7 +284,7 @@ export default function CalendarPage() {
                 <p className="text-[#374151] text-sm leading-relaxed mb-4">
                   May 2025 intake registration is active. Late fees apply after May 30th.
                 </p>
-                <button className="text-[#8B0000] text-sm font-bold flex items-center gap-2 hover:underline">
+                <button onClick={generatePDF} className="text-[#8B0000] text-sm font-bold flex items-center gap-2 hover:underline">
                   <FileText className="w-4 h-4" /> Download Full Calendar (PDF)
                 </button>
               </div>

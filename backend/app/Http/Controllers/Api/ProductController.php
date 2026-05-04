@@ -49,7 +49,7 @@ class ProductController extends BaseController
             'category_id' => 'required|exists:product_categories,id',
             'stock_quantity' => 'required|integer',
             'images' => 'required|array',
-            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
+            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:20480',
         ]);
 
         if ($validator->fails()) {
@@ -70,6 +70,7 @@ class ProductController extends BaseController
         $input['images'] = $imagePaths;
 
         $product = Product::create($input);
+        $product->load('category');
 
         return $this->sendResponse($product, 'Product created successfully.');
     }
@@ -99,6 +100,7 @@ class ProductController extends BaseController
         }
 
         $product->update($request->all());
+        $product->load('category');
 
         return $this->sendResponse($product, 'Product updated successfully.');
     }
@@ -131,7 +133,7 @@ class ProductController extends BaseController
     {
         $product = Product::findOrFail($id);
         $validator = Validator::make($request->all(), [
-            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:20480',
         ]);
 
         if ($validator->fails()) {

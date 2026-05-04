@@ -44,7 +44,17 @@ function Toast({ message, type, onClose }: { message: string; type: "success" | 
 }
 
 // ─── Lightbox ─────────────────────────────────────────────────────────────────
-function Lightbox({ image, onClose }: { image: GalleryImage; onClose: () => void }) {
+function Lightbox({ 
+  image, 
+  onClose, 
+  onEdit, 
+  onDelete 
+}: { 
+  image: GalleryImage; 
+  onClose: () => void;
+  onEdit?: (img: GalleryImage) => void;
+  onDelete?: (img: GalleryImage) => void;
+}) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
     document.addEventListener("keydown", onKey)
@@ -53,21 +63,49 @@ function Lightbox({ image, onClose }: { image: GalleryImage; onClose: () => void
 
   return (
     <div
-      className="fixed inset-0 bg-black/90 z-[200] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/95 z-[200] flex items-center justify-center p-4 sm:p-10 backdrop-blur-md"
       onClick={onClose}
     >
-      <button className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition" onClick={onClose}>
-        <X className="w-5 h-5" />
+      <button className="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-all z-[210]" onClick={onClose}>
+        <X className="w-6 h-6" />
       </button>
-      <div className="relative max-w-4xl w-full max-h-[85vh] flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
-        <div className="relative w-full max-h-[75vh] rounded-2xl overflow-hidden">
+      
+      <div className="relative max-w-5xl w-full flex flex-col items-center gap-6" onClick={e => e.stopPropagation()}>
+        <div className="relative w-full max-h-[70vh] rounded-3xl overflow-hidden shadow-2xl border border-white/10">
           <img src={image.image_path} alt={image.alt_text} className="w-full h-full object-contain max-h-[70vh]" />
         </div>
-        <div className="text-center">
-          <p className="text-white font-bold text-lg">{image.title}</p>
-          <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${CATEGORY_COLORS[image.category] || "bg-gray-100 text-gray-600"}`}>
-            {image.category}
-          </span>
+        
+        <div className="text-center w-full max-w-2xl bg-white/5 backdrop-blur-xl p-6 rounded-[32px] border border-white/10">
+          <h3 className="text-white font-serif font-bold text-2xl mb-2">{image.title}</h3>
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <span className={`px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest ${CATEGORY_COLORS[image.category] || "bg-gray-100 text-gray-600"}`}>
+              {image.category}
+            </span>
+            {image.is_featured && (
+              <span className="px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-yellow-400 text-yellow-900">
+                Featured
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center justify-center gap-4">
+            {onEdit && (
+              <button 
+                onClick={() => { onClose(); onEdit(image); }}
+                className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-900/20"
+              >
+                <Edit className="w-4 h-4" /> Edit Details
+              </button>
+            )}
+            {onDelete && (
+              <button 
+                onClick={() => { onClose(); onDelete(image); }}
+                className="flex items-center gap-2 px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-red-900/20"
+              >
+                <Trash2 className="w-4 h-4" /> Delete Photo
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -443,58 +481,59 @@ export default function GalleryPage() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filtered.map(image => (
-              <div
-                key={image.id}
-                className="group relative aspect-square rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 shadow-sm hover:shadow-lg transition-all"
-              >
-                <img
-                  src={image.image_path}
-                  alt={image.alt_text}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
+                <div
+                  key={image.id}
+                  onClick={() => setLightboxImage(image)}
+                  className="group relative aspect-square rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 shadow-sm hover:shadow-lg transition-all cursor-pointer"
+                >
+                  <img
+                    src={image.image_path}
+                    alt={image.alt_text}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
 
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex flex-col justify-between p-3">
-                  {/* Top badges */}
-                  <div className="flex items-start justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${CATEGORY_COLORS[image.category] || "bg-gray-100 text-gray-600"}`}>
-                      {image.category}
-                    </span>
-                    {image.is_featured && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-yellow-400 text-yellow-900">
-                        Featured
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex flex-col justify-between p-3">
+                    {/* Top badges */}
+                    <div className="flex items-start justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${CATEGORY_COLORS[image.category] || "bg-gray-100 text-gray-600"}`}>
+                        {image.category}
                       </span>
-                    )}
-                  </div>
+                      {image.is_featured && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-yellow-400 text-yellow-900">
+                          Featured
+                        </span>
+                      )}
+                    </div>
 
-                  {/* Bottom actions */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-xs font-bold line-clamp-1 mb-2 drop-shadow">{image.title}</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setLightboxImage(image)}
-                        className="flex-1 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition"
-                      >
-                        <ZoomIn className="w-3 h-3" /> View
-                      </button>
-                      <button
-                        onClick={() => { setEditError(""); setShowEdit(image) }}
-                        className="p-1.5 bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg transition"
-                        title="Edit"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setShowDelete(image)}
-                        className="p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-lg transition"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    {/* Bottom actions */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-white text-[11px] font-bold line-clamp-1 mb-2 drop-shadow-md">{image.title}</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setLightboxImage(image); }}
+                          className="flex-1 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-lg text-[10px] font-black uppercase tracking-tighter flex items-center justify-center gap-1 transition"
+                        >
+                          <ZoomIn className="w-3 h-3" /> View
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditError(""); setShowEdit(image); }}
+                          className="p-1.5 bg-blue-500/80 hover:bg-blue-600 text-white rounded-lg transition"
+                          title="Edit"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setShowDelete(image); }}
+                          className="p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-lg transition"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
             ))}
           </div>
         )}
@@ -538,7 +577,14 @@ export default function GalleryPage() {
       )}
 
       {/* Lightbox */}
-      {lightboxImage && <Lightbox image={lightboxImage} onClose={() => setLightboxImage(null)} />}
+      {lightboxImage && (
+        <Lightbox 
+          image={lightboxImage} 
+          onClose={() => setLightboxImage(null)} 
+          onEdit={(img) => { setEditError(""); setShowEdit(img) }}
+          onDelete={(img) => setShowDelete(img)}
+        />
+      )}
 
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

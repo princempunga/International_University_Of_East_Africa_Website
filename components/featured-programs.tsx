@@ -108,10 +108,10 @@ export function FeaturedPrograms() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex flex-col sm:flex-row gap-4 mb-12"
+          className="flex flex-col md:flex-row gap-4 mb-12"
         >
           {/* Search */}
-          <div className="relative flex-1">
+          <div className="relative w-full md:flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B5B4F]" />
             <input
               type="text"
@@ -122,32 +122,34 @@ export function FeaturedPrograms() {
             />
           </div>
 
-          {/* Faculty Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedFaculty}
-              onChange={(e) => setSelectedFaculty(e.target.value)}
-              className="appearance-none w-full sm:w-48 px-4 py-3 pr-10 border border-[#E8E0D5] rounded-lg bg-white text-[#1A0A00] focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000]"
-            >
-              {faculties.map((faculty) => (
-                <option key={faculty} value={faculty}>{faculty}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B5B4F] pointer-events-none" />
-          </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Faculty Dropdown */}
+            <div className="relative w-full">
+              <select
+                value={selectedFaculty}
+                onChange={(e) => setSelectedFaculty(e.target.value)}
+                className="appearance-none w-full sm:w-48 px-4 py-3 pr-10 border border-[#E8E0D5] rounded-lg bg-white text-[#1A0A00] focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000]"
+              >
+                {faculties.map((faculty) => (
+                  <option key={faculty} value={faculty}>{faculty}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B5B4F] pointer-events-none" />
+            </div>
 
-          {/* Level Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedLevel}
-              onChange={(e) => setSelectedLevel(e.target.value)}
-              className="appearance-none w-full sm:w-40 px-4 py-3 pr-10 border border-[#E8E0D5] rounded-lg bg-white text-[#1A0A00] focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000]"
-            >
-              {levels.map((level) => (
-                <option key={level} value={level}>{level === "All Levels" ? level : level.charAt(0) + level.slice(1).toLowerCase()}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B5B4F] pointer-events-none" />
+            {/* Level Dropdown */}
+            <div className="relative w-full">
+              <select
+                value={selectedLevel}
+                onChange={(e) => setSelectedLevel(e.target.value)}
+                className="appearance-none w-full sm:w-40 px-4 py-3 pr-10 border border-[#E8E0D5] rounded-lg bg-white text-[#1A0A00] focus:outline-none focus:ring-2 focus:ring-[#8B0000]/20 focus:border-[#8B0000]"
+              >
+                {levels.map((level) => (
+                  <option key={level} value={level}>{level === "All Levels" ? level : level.charAt(0) + level.slice(1).toLowerCase()}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B5B4F] pointer-events-none" />
+            </div>
           </div>
         </motion.div>
 

@@ -17,53 +17,73 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import api from "@/lib/api"
+import { AlertCircle } from "lucide-react"
 
 export default function TrackOrderPage() {
   const [orderNumber, setOrderNumber] = useState("")
   const [email, setEmail] = useState("")
   const [isTracking, setIsTracking] = useState(false)
   const [showResult, setShowResult] = useState(false)
+  const [orderData, setOrderData] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleTrack = (e: React.FormEvent) => {
+  const handleTrack = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsTracking(true)
-    // Simulate API call
-    setTimeout(() => {
+    setError(null)
+    try {
+      const res = await api.trackOrder(orderNumber.startsWith('#') ? orderNumber.substring(1) : orderNumber)
+      if (res?.success) {
+        setOrderData(res.data)
+        setShowResult(true)
+      } else {
+        throw new Error(res?.message || "Order not found")
+      }
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
       setIsTracking(false)
-      setShowResult(true)
-    }, 1500)
+    }
   }
 
-  const steps = [
-    {
-      status: "completed",
-      icon: ShoppingBag,
-      title: "Order Placed",
-      date: "April 29, 2026 at 9:01 AM",
-      desc: "Your order has been confirmed"
-    },
-    {
-      status: "completed",
-      icon: Package,
-      title: "Order Processed",
-      date: "April 29, 2026 at 11:30 AM",
-      desc: "Your items are being prepared"
-    },
-    {
-      status: "current",
-      icon: Truck,
-      title: "Out for Delivery",
-      date: "Expected May 3, 2026",
-      desc: "Your order is on its way"
-    },
-    {
-      status: "pending",
-      icon: CheckCircle,
-      title: "Delivered",
-      date: "Pending",
-      desc: "Order will be delivered to your address"
-    }
-  ]
+  const getStatusSteps = (status: string) => {
+    const statuses = ["pending", "processing", "shipped", "delivered"]
+    const currentIndex = statuses.indexOf(status)
+    
+    return [
+      {
+        status: currentIndex >= 0 ? "completed" : "pending",
+        icon: ShoppingBag,
+        title: "Order Placed",
+        date: "Confirmed",
+        desc: "Your order has been received"
+      },
+      {
+        status: currentIndex > 0 ? "completed" : currentIndex === 0 ? "current" : "pending",
+        icon: Package,
+        title: "Order Processed",
+        date: currentIndex >= 1 ? "Processed" : "Pending",
+        desc: "Your items are being prepared"
+      },
+      {
+        status: currentIndex > 1 ? "completed" : currentIndex === 1 ? "current" : "pending",
+        icon: Truck,
+        title: "Out for Delivery",
+        date: currentIndex >= 2 ? "In Transit" : "Pending",
+        desc: "Your order is on its way"
+      },
+      {
+        status: currentIndex === 3 ? "completed" : currentIndex === 2 ? "current" : "pending",
+        icon: CheckCircle,
+        title: "Delivered",
+        date: currentIndex === 3 ? "Delivered" : "Pending",
+        desc: "Order has been delivered"
+      }
+    ]
+  }
+
+  const steps = orderData ? getStatusSteps(orderData.order_status) : []
 
   return (
     <main className="min-h-screen bg-[#F5F0E8] font-sans">
@@ -100,6 +120,13 @@ export default function TrackOrderPage() {
                 <h2 className="text-3xl font-serif font-bold text-[#1A0A00] mb-3">Enter Your Order Details</h2>
                 <p className="text-gray-500">Enter your order number and email to track your delivery status</p>
               </div>
+
+              {error && (
+                <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm font-medium">
+                  <AlertCircle className="w-5 h-5" />
+                  {error}
+                </div>
+              )}
 
               <form onSubmit={handleTrack} className="space-y-6">
                 <div className="space-y-2">
@@ -163,13 +190,24 @@ export default function TrackOrderPage() {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-xs font-black uppercase tracking-tighter bg-[#8B0000]/10 text-[#8B0000] px-3 py-1 rounded-full">Order Details</span>
                     </div>
-                    <h2 className="text-3xl font-serif font-bold text-[#8B0000]">{orderNumber || "#IUEA-2026-6101"}</h2>
-                    <p className="text-gray-500 font-medium">Placed on April 29, 2026</p>
+                    <h2 className="text-3xl font-serif font-bold text-[#8B0000]">#{orderData.order_number}</h2>
+                    <p className="text-gray-500 font-medium">
+                      Placed on {new Date(orderData.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
                   </div>
                   <div className="md:text-right">
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Estimated Delivery</p>
-                    <p className="text-xl font-bold text-[#1A0A00]">May 3, 2026</p>
-                    <p className="text-sm text-[#8B0000] font-medium mt-1">IUEA Phone Case × 1</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Order Status</p>
+                    <p className="text-xl font-bold text-[#1A0A00] uppercase tracking-tighter">{orderData.order_status}</p>
+                    <div className="mt-2 space-y-1">
+                      {orderData.items?.slice(0, 2).map((item: any, i: number) => (
+                        <p key={i} className="text-xs text-[#8B0000] font-bold">
+                          {item.product_name} × {item.quantity}
+                        </p>
+                      ))}
+                      {orderData.items?.length > 2 && (
+                        <p className="text-[10px] text-gray-400 font-bold">+ {orderData.items.length - 2} more items</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -235,9 +273,8 @@ export default function TrackOrderPage() {
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Shipping Address</p>
                       <p className="text-sm text-gray-600 leading-relaxed font-medium">
-                        IUEA Main Campus, Kansanga<br />
-                        Block B, Room 204<br />
-                        Kampala, Uganda
+                        {orderData.delivery_address}<br />
+                        {orderData.delivery_city}, Uganda
                       </p>
                     </div>
                   </div>
@@ -248,7 +285,9 @@ export default function TrackOrderPage() {
                       </div>
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Shipping Method</p>
-                        <p className="text-sm text-gray-600 font-medium">Campus Delivery</p>
+                        <p className="text-sm text-gray-600 font-medium uppercase tracking-tighter">
+                          {orderData.delivery_method?.replace('_', ' ')}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-4">
@@ -257,7 +296,7 @@ export default function TrackOrderPage() {
                       </div>
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Contact Details</p>
-                        <p className="text-sm text-gray-600 font-medium">+256 700 000 000</p>
+                        <p className="text-sm text-gray-600 font-medium">{orderData.customer_phone}</p>
                       </div>
                     </div>
                   </div>
@@ -278,9 +317,92 @@ export default function TrackOrderPage() {
                 >
                   Continue Shopping
                 </Link>
-                <button className="flex-1 h-[60px] border-2 border-[#8B0000] text-[#8B0000] rounded-full font-bold hover:bg-[#8B0000]/5 transition-all flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => {
+                    const html2pdf = (require('html2pdf.js') as any);
+                    const element = document.createElement('div');
+                    element.innerHTML = `
+                      <div style="font-family: 'Inter', sans-serif; padding: 40px; color: #1a0a00; line-height: 1.6; background: white;">
+                        <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #8b0000; padding-bottom: 20px;">
+                          <div style="font-size: 24px; font-weight: 900; color: #8b0000; text-transform: uppercase; margin-bottom: 5px;">International University of East Africa</div>
+                          <div style="font-size: 12px; font-weight: 700; color: #666;">Official Store Receipt</div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+                          <div style="width: 50%;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 10px; text-transform: uppercase; color: #999; letter-spacing: 1px;">Order Number</h4>
+                            <p style="margin: 0; font-weight: 700; font-size: 14px;">#${orderData.order_number}</p>
+                            <p style="font-size: 11px; color: #999; margin-top: 5px;">Placed on ${new Date(orderData.created_at).toLocaleDateString()}</p>
+                          </div>
+                          <div style="width: 50%; text-align: right;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 10px; text-transform: uppercase; color: #999; letter-spacing: 1px;">Customer Details</h4>
+                            <p style="margin: 0; font-weight: 700; font-size: 14px;">${orderData.customer_name}</p>
+                            <p style="font-weight: 500; font-size: 11px; margin: 0;">${orderData.customer_email}</p>
+                            <p style="font-weight: 500; font-size: 11px; margin: 0;">${orderData.customer_phone}</p>
+                          </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+                          <div style="width: 50%;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 10px; text-transform: uppercase; color: #999; letter-spacing: 1px;">Shipping Address</h4>
+                            <p style="margin: 0; font-weight: 700; font-size: 14px;">${orderData.delivery_address}</p>
+                            <p style="margin: 0; font-weight: 700; font-size: 14px;">${orderData.delivery_city}, Uganda</p>
+                          </div>
+                          <div style="width: 50%; text-align: right;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 10px; text-transform: uppercase; color: #999; letter-spacing: 1px;">Payment Method</h4>
+                            <p style="margin: 0; font-weight: 700; font-size: 14px; text-transform: uppercase;">${orderData.payment_method?.replace('_', ' ')}</p>
+                          </div>
+                        </div>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+                          <thead>
+                            <tr style="background: #f9f9f9;">
+                              <th style="text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase;">Product</th>
+                              <th style="text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase;">Qty</th>
+                              <th style="text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase;">Size/Color</th>
+                              <th style="text-align: right; padding: 12px; font-size: 10px; text-transform: uppercase;">Subtotal</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${orderData.items?.map((item: any) => `
+                              <tr>
+                                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 13px;"><strong>${item.product_name}</strong></td>
+                                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 13px;">${item.quantity}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 13px;">${item.size || 'N/A'} / ${item.color || 'N/A'}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; text-align: right;">UGX ${item.subtotal?.toLocaleString()}</td>
+                              </tr>
+                            `).join('')}
+                          </tbody>
+                        </table>
+
+                        <div style="margin-left: auto; width: 250px;">
+                          <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px;"><span>Subtotal</span><span>UGX ${orderData.subtotal?.toLocaleString()}</span></div>
+                          <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px;"><span>Delivery Fee</span><span>UGX ${orderData.delivery_fee?.toLocaleString()}</span></div>
+                          <div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px;"><span>Tax (VAT 18%)</span><span>UGX ${orderData.tax?.toLocaleString()}</span></div>
+                          <div style="display: flex; justify-content: space-between; border-top: 2px solid #8b0000; margin-top: 10px; padding-top: 10px; font-size: 16px; font-weight: 900; color: #8b0000;"><span>Total Paid</span><span>UGX ${orderData.total?.toLocaleString()}</span></div>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 60px; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 20px;">
+                          <p style="margin: 5px 0;">Thank you for shopping with IUEA. This is an official computer-generated receipt.</p>
+                          <p style="margin: 5px 0; font-weight: 700;">International University of East Africa - Learning to Succeed</p>
+                        </div>
+                      </div>
+                    `;
+
+                    const opt = {
+                      margin: 0,
+                      filename: `IUEA_Receipt_${orderData.order_number}.pdf`,
+                      image: { type: 'jpeg', quality: 0.98 },
+                      html2canvas: { scale: 2 },
+                      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                    };
+
+                    html2pdf().from(element).set(opt).save();
+                  }}
+                  className="flex-1 h-[60px] border-2 border-[#8B0000] text-[#8B0000] rounded-full font-bold hover:bg-[#8B0000]/5 transition-all flex items-center justify-center gap-2"
+                >
                   <Download className="w-5 h-5" />
-                  Download Receipt
+                  Download Receipt (PDF)
                 </button>
               </div>
 

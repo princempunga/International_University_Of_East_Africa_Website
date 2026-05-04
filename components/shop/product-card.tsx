@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { Star, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { formatCurrency } from "@/lib/utils"
 
 interface ProductCardProps {
   product: Product
@@ -114,11 +115,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
           <div className="mt-auto flex items-center gap-3">
             <span className="text-[20px] font-black text-[#8B0000]">
-              UGX {product.price.toLocaleString()}
+              UGX {formatCurrency(product.price)}
             </span>
             {product.originalPrice && (
               <span className="text-sm text-gray-300 line-through font-medium">
-                UGX {product.originalPrice.toLocaleString()}
+                UGX {formatCurrency(product.originalPrice)}
               </span>
             )}
           </div>

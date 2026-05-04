@@ -11,6 +11,12 @@ class Intake extends Model
         'name',
         'start_date',
         'end_date',
+        'orientation_date',
+        'lectures_start_date',
+        'late_registration_deadline',
+        'mid_semester_date',
+        'final_exams_date',
+        'graduation_date',
         'application_deadline',
         'status',
         'description',
@@ -21,6 +27,12 @@ class Intake extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'orientation_date' => 'date',
+        'lectures_start_date' => 'date',
+        'late_registration_deadline' => 'date',
+        'mid_semester_date' => 'date',
+        'final_exams_date' => 'date',
+        'graduation_date' => 'date',
         'application_deadline' => 'date',
     ];
 

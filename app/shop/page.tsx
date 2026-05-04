@@ -1,24 +1,42 @@
 "use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
-import { products } from "@/data/products"
 import { ProductCard } from "@/components/shop/product-card"
-
-const categories = [
-  "All Products",
-  "T-Shirts & Hoodies",
-  "Accessories",
-  "Stationery",
-  "Electronics",
-  "Vehicles",
-  "Graduation Items"
-]
+import api from "@/lib/api"
+import { Loader2, Package } from "lucide-react"
+import { transformProduct } from "@/lib/utils"
 
 export default function ShopPage() {
+  const [products, setProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<string[]>(["All Products"])
   const [activeCategory, setActiveCategory] = useState("All Products")
   const [displayCount, setDisplayCount] = useState(12)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [prodRes, catRes] = await Promise.all([
+          api.getPublicProducts({ status: 'active' }),
+          api.getCategories()
+        ])
+
+        if (prodRes?.success) {
+          setProducts(prodRes.data.map(transformProduct))
+        }
+        if (catRes?.success) {
+          setCategories(["All Products", ...catRes.data.map((c: any) => c.name)])
+        }
+      } catch (error) {
+        console.error("Failed to fetch shop data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const filteredProducts = products.filter(p => 
     activeCategory === "All Products" || p.category === activeCategory
@@ -98,38 +116,51 @@ export default function ShopPage() {
       {/* Products Grid */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-8">
-            <AnimatePresence mode="popLayout">
-              {displayedProducts.map((product) => (
-                <motion.div
-                  key={product.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-          {displayCount < filteredProducts.length && (
-            <div className="mt-16 text-center">
-              <button 
-                onClick={() => setDisplayCount(prev => prev + 8)}
-                className="px-10 py-4 border-2 border-[#8B0000] text-[#8B0000] rounded-xl font-bold hover:bg-[#8B0000] hover:text-white transition-all"
-              >
-                Load More Products
-              </button>
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-32">
+              <Loader2 className="w-12 h-12 text-[#8B0000] animate-spin mb-4" />
+              <p className="text-gray-500 font-medium">Fetching the latest merchandise...</p>
             </div>
-          )}
+          ) : (
+            <>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-8">
+                <AnimatePresence mode="popLayout">
+                  {displayedProducts.map((product) => (
+                    <motion.div
+                      key={product.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ProductCard product={product} />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
 
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">No products found in this category.</p>
-            </div>
+              {displayCount < filteredProducts.length && (
+                <div className="mt-16 text-center">
+                  <button 
+                    onClick={() => setDisplayCount(prev => prev + 8)}
+                    className="px-10 py-4 border-2 border-[#8B0000] text-[#8B0000] rounded-xl font-bold hover:bg-[#8B0000] hover:text-white transition-all"
+                  >
+                    Load More Products
+                  </button>
+                </div>
+              )}
+
+              {filteredProducts.length === 0 && (
+                <div className="text-center py-20">
+                  <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <Package className="w-10 h-10 text-gray-300" />
+                  </div>
+                  <h3 className="text-2xl font-serif font-bold text-[#1A0A00] mb-2">No Products Found</h3>
+                  <p className="text-gray-500 text-lg">We couldn't find any products in the "{activeCategory}" category.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

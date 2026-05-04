@@ -11,6 +11,12 @@ type Intake = {
   description?: string
   start_date: string
   end_date: string
+  orientation_date?: string
+  lectures_start_date?: string
+  late_registration_deadline?: string
+  mid_semester_date?: string
+  final_exams_date?: string
+  graduation_date?: string
   application_deadline: string
   max_students?: number
   status: "draft" | "active" | "closed"
@@ -21,6 +27,12 @@ type IntakeFormData = {
   description: string
   start_date: string
   end_date: string
+  orientation_date: string
+  lectures_start_date: string
+  late_registration_deadline: string
+  mid_semester_date: string
+  final_exams_date: string
+  graduation_date: string
   application_deadline: string
   max_students: string
   status: "draft" | "active" | "closed"
@@ -31,6 +43,12 @@ const emptyForm: IntakeFormData = {
   description: "",
   start_date: "",
   end_date: "",
+  orientation_date: "",
+  lectures_start_date: "",
+  late_registration_deadline: "",
+  mid_semester_date: "",
+  final_exams_date: "",
+  graduation_date: "",
   application_deadline: "",
   max_students: "",
   status: "draft",
@@ -115,6 +133,39 @@ function IntakeForm({
         <div>
           <label className={labelClass}>End Date <span className="text-red-500">*</span></label>
           <input required type="date" className={inputClass} value={form.end_date} onChange={e => setForm({ ...form, end_date: e.target.value })} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>Orientation Date</label>
+          <input type="date" className={inputClass} value={form.orientation_date} onChange={e => setForm({ ...form, orientation_date: e.target.value })} />
+        </div>
+        <div>
+          <label className={labelClass}>Lectures Start Date</label>
+          <input type="date" className={inputClass} value={form.lectures_start_date} onChange={e => setForm({ ...form, lectures_start_date: e.target.value })} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>Late Registration Deadline</label>
+          <input type="date" className={inputClass} value={form.late_registration_deadline} onChange={e => setForm({ ...form, late_registration_deadline: e.target.value })} />
+        </div>
+        <div>
+          <label className={labelClass}>Mid-Semester Date</label>
+          <input type="date" className={inputClass} value={form.mid_semester_date} onChange={e => setForm({ ...form, mid_semester_date: e.target.value })} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>Final Exams Date</label>
+          <input type="date" className={inputClass} value={form.final_exams_date} onChange={e => setForm({ ...form, final_exams_date: e.target.value })} />
+        </div>
+        <div>
+          <label className={labelClass}>Graduation Date</label>
+          <input type="date" className={inputClass} value={form.graduation_date} onChange={e => setForm({ ...form, graduation_date: e.target.value })} />
         </div>
       </div>
 
@@ -346,6 +397,12 @@ export default function IntakesPage() {
           description: createForm.description,
           start_date: createForm.start_date,
           end_date: createForm.end_date,
+          orientation_date: createForm.orientation_date || undefined,
+          lectures_start_date: createForm.lectures_start_date || undefined,
+          late_registration_deadline: createForm.late_registration_deadline || undefined,
+          mid_semester_date: createForm.mid_semester_date || undefined,
+          final_exams_date: createForm.final_exams_date || undefined,
+          graduation_date: createForm.graduation_date || undefined,
           application_deadline: createForm.application_deadline,
           max_students: createForm.max_students ? parseInt(createForm.max_students) : undefined,
           status: createForm.status,
@@ -371,6 +428,12 @@ export default function IntakesPage() {
       description: intake.description || "",
       start_date: intake.start_date?.slice(0, 10) || "",
       end_date: intake.end_date?.slice(0, 10) || "",
+      orientation_date: intake.orientation_date?.slice(0, 10) || "",
+      lectures_start_date: intake.lectures_start_date?.slice(0, 10) || "",
+      late_registration_deadline: intake.late_registration_deadline?.slice(0, 10) || "",
+      mid_semester_date: intake.mid_semester_date?.slice(0, 10) || "",
+      final_exams_date: intake.final_exams_date?.slice(0, 10) || "",
+      graduation_date: intake.graduation_date?.slice(0, 10) || "",
       application_deadline: intake.application_deadline?.slice(0, 10) || "",
       max_students: intake.max_students?.toString() || "",
       status: intake.status,
@@ -398,6 +461,12 @@ export default function IntakesPage() {
           description: editForm.description,
           start_date: editForm.start_date,
           end_date: editForm.end_date,
+          orientation_date: editForm.orientation_date || undefined,
+          lectures_start_date: editForm.lectures_start_date || undefined,
+          late_registration_deadline: editForm.late_registration_deadline || undefined,
+          mid_semester_date: editForm.mid_semester_date || undefined,
+          final_exams_date: editForm.final_exams_date || undefined,
+          graduation_date: editForm.graduation_date || undefined,
           application_deadline: editForm.application_deadline,
           max_students: editForm.max_students ? parseInt(editForm.max_students) : undefined,
           status: editForm.status,

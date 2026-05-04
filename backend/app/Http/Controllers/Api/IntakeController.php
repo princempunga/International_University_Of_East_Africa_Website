@@ -21,6 +21,12 @@ class IntakeController extends BaseController
             'name' => 'required',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
+            'orientation_date' => 'nullable|date',
+            'lectures_start_date' => 'nullable|date',
+            'late_registration_deadline' => 'nullable|date',
+            'mid_semester_date' => 'nullable|date',
+            'final_exams_date' => 'nullable|date',
+            'graduation_date' => 'nullable|date',
             'application_deadline' => 'required|date|before:end_date',
             'status' => 'required|in:draft,active,closed',
             'max_students' => 'nullable|integer',
@@ -51,6 +57,12 @@ class IntakeController extends BaseController
             'name' => 'required',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
+            'orientation_date' => 'nullable|date',
+            'lectures_start_date' => 'nullable|date',
+            'late_registration_deadline' => 'nullable|date',
+            'mid_semester_date' => 'nullable|date',
+            'final_exams_date' => 'nullable|date',
+            'graduation_date' => 'nullable|date',
             'application_deadline' => 'required|date|before:end_date',
             'status' => 'required|in:draft,active,closed',
             'max_students' => 'nullable|integer',
@@ -98,5 +110,11 @@ class IntakeController extends BaseController
             return $this->sendError('No active intake found.');
         }
         return $this->sendResponse($intake, 'Active intake retrieved successfully.');
+    }
+
+    public function getPublished(): JsonResponse
+    {
+        $intakes = Intake::published()->latest('start_date')->get();
+        return $this->sendResponse($intakes, 'Published intakes retrieved successfully.');
     }
 }

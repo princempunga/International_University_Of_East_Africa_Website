@@ -228,7 +228,7 @@ function ArticleForm({
           >
             <ImageIcon className="w-7 h-7" />
             <span className="text-sm font-bold">Click to upload a featured image</span>
-            <span className="text-xs">JPG, PNG, WebP — Max 5MB</span>
+            <span className="text-xs">JPG, PNG, WebP — Max 20MB</span>
           </button>
         )}
         {imagePreview && (
@@ -321,7 +321,10 @@ export default function NewsPage() {
         body: fd,
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || Object.values(data?.errors || {}).flat().join(" ") || "Failed to create article")
+      if (!res.ok) {
+        const detailErrors = data?.errors ? Object.values(data.errors).flat().join(" ") : null
+        throw new Error(detailErrors || data?.message || "Failed to create article")
+      }
       setNews(prev => [data.data, ...prev])
       setShowCreate(false)
       showToast("Article created successfully!")
@@ -348,7 +351,10 @@ export default function NewsPage() {
         body: fd,
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || Object.values(data?.errors || {}).flat().join(" ") || "Failed to update article")
+      if (!res.ok) {
+        const detailErrors = data?.errors ? Object.values(data.errors).flat().join(" ") : null
+        throw new Error(detailErrors || data?.message || "Failed to update article")
+      }
       setNews(prev => prev.map(n => (n.id === showEdit.id ? data.data : n)))
       setShowEdit(null)
       showToast("Article updated successfully!")
