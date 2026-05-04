@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Quote } from "lucide-react"
 const testimonials = [
   {
     quote: "IUEA transformed my career trajectory completely. The blend of theoretical knowledge and practical skills I gained here prepared me for the competitive job market. The faculty's dedication to student success is truly remarkable.",
-    name: "Amara Okonkwo",
+    name: "Prince Mpunga",
     program: "BSc Computer Science",
     year: "Class of 2024",
     image: "/Say.jpg",
