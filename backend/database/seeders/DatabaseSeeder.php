@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\News;
 use App\Models\GalleryImage;
+use App\Models\SeoSetting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -200,6 +201,28 @@ class DatabaseSeeder extends Seeder
             'category' => 'campus',
             'alt_text' => 'Students in the lounge',
             'uploaded_by' => $superAdmin->id,
+        ]);
+
+        // 8. SEO Settings
+        SeoSetting::create([
+            'page_name' => 'home',
+            'title' => 'IUEA | International University of East Africa',
+            'description' => 'Learning to Succeed. NCHE Accredited institution in Kampala, Uganda offering world-class education.',
+            'keywords' => 'IUEA, University, Kampala, Uganda, Education',
+        ]);
+
+        SeoSetting::create([
+            'page_name' => 'about',
+            'title' => 'About Us | IUEA',
+            'description' => 'Discover the story, mission and vision of the International University of East Africa.',
+            'keywords' => 'IUEA History, University Mission, Uganda Higher Education',
+        ]);
+
+        SeoSetting::create([
+            'page_name' => 'academics',
+            'title' => 'Academics & Programs | IUEA',
+            'description' => 'Explore our wide range of undergraduate and postgraduate programs.',
+            'keywords' => 'University Programs, Degrees, Diplomas, IUEA Academics',
         ]);
     }
 }

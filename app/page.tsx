@@ -1,4 +1,10 @@
+import { Metadata } from "next"
+import { getPageMetadata } from "@/lib/seo"
 import { Hero } from "@/components/hero"
+
+export async function generateMetadata(): Promise<Metadata> {
+  return getPageMetadata("home")
+}
 import { StatsBar } from "@/components/stats-bar"
 import { Faculties } from "@/components/faculties"
 import { FeaturedPrograms } from "@/components/featured-programs"

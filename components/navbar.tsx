@@ -68,7 +68,8 @@ export function Navbar() {
     if (currentLink) setActiveLink(currentLink.name)
   }, [pathname])
 
-  if (!isMounted) return null
+  // We'll skip the isMounted return to ensure the layout shows up immediately
+  // if (!isMounted) return null
   if (pathname.startsWith('/login') || pathname.startsWith('/admin')) return null
 
   return (

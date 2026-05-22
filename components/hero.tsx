@@ -27,7 +27,7 @@ export function Hero() {
         <div className="max-w-3xl mx-auto lg:mx-0 text-center lg:text-left">
           {/* Badge Pill */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex justify-center lg:justify-start"
@@ -39,7 +39,7 @@ export function Hero() {
 
           {/* Heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mt-6 lg:mt-8"
@@ -54,7 +54,7 @@ export function Hero() {
 
           {/* Subtitle */}
           <motion.p
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
             className="mt-6 text-white/70 mx-auto lg:mx-0 text-[15px] lg:text-lg leading-relaxed max-w-[480px]"
@@ -64,7 +64,7 @@ export function Hero() {
 
           {/* Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.8 }}
             className="mt-10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
@@ -86,7 +86,7 @@ export function Hero() {
 
           {/* Stats */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 1.0 }}
             className="mt-16 lg:mt-20 flex flex-col sm:flex-row justify-center lg:justify-start gap-8 lg:gap-16"

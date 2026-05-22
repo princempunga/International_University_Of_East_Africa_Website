@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\SuperAdminController;
+use App\Http\Controllers\Api\SeoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,8 @@ Route::post('/newsletter/unsubscribe', [NewsletterController::class, 'unsubscrib
 
 Route::get('/orders/track/{orderNumber}', [OrderController::class, 'track']);
 Route::post('/orders', [OrderController::class, 'store']);
+
+Route::get('/seo/{page_name}', [SeoController::class, 'show']);
 
 // Protected routes (Any Admin)
 Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
@@ -85,6 +88,10 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::get('/newsletter/subscribers', [NewsletterController::class, 'getSubscribers']);
 
     Route::get('/stats', [SuperAdminController::class, 'getSystemStats']);
+
+    // SEO Settings
+    Route::get('/seo', [SeoController::class, 'index']);
+    Route::post('/seo/update', [SeoController::class, 'update']);
 });
 
 // Super Admin Only
