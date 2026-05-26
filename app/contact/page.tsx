@@ -4,8 +4,11 @@ import { motion, AnimatePresence } from "framer-motion"
 import { MapPin, Phone, Mail, Clock, Send, MessageSquare, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 export default function ContactPage() {
+  const seoComponent = useCMSSEO('contact', { title: 'Contact IUEA', description: 'Get in touch with IUEA admissions, admin or student services.' })
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -43,6 +46,7 @@ export default function ContactPage() {
 
   return (
     <main className="min-h-screen bg-white">
+      {seoComponent}
 
       
       {/* Hero */}

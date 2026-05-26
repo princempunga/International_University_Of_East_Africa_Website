@@ -6,8 +6,11 @@ import { ProductCard } from "@/components/shop/product-card"
 import api from "@/lib/api"
 import { Loader2, Package } from "lucide-react"
 import { transformProduct } from "@/lib/utils"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 export default function ShopPage() {
+  const seoComponent = useCMSSEO('shop', { title: 'IUEA Shop', description: 'Shop official IUEA merchandise — apparel, books and more.' })
+
   const [products, setProducts] = useState<any[]>([])
   const [categories, setCategories] = useState<string[]>(["All Products"])
   const [activeCategory, setActiveCategory] = useState("All Products")
@@ -46,6 +49,7 @@ export default function ShopPage() {
 
   return (
     <main className="min-h-screen bg-[#faf9f7]">
+      {seoComponent}
 
 
       {/* Hero Section */}

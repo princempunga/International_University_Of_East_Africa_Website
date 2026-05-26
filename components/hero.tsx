@@ -1,22 +1,42 @@
 "use client"
 
 import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronDown, Users, BookOpen, Globe, ArrowRight } from "lucide-react"
+import { motion } from "framer-motion"
+import { ArrowRight, Users, BookOpen, Globe } from "lucide-react"
 
-const stats = [
+const defaultStats = [
   { icon: Users, value: "9K+", label: "Students" },
   { icon: BookOpen, value: "62+", label: "Programs" },
   { icon: Globe, value: "45+", label: "Countries" },
 ]
 
-export function Hero() {
+interface HeroProps {
+  titleMain?: string;
+  titleAccent?: string;
+  subtitle?: string;
+  image?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  stats?: Array<{ icon: any, value: string, label: string }>;
+}
+
+export function Hero({ 
+  titleMain, 
+  titleAccent,
+  subtitle, 
+  image = "/hero.png", 
+  buttonText = "Apply Now", 
+  buttonLink = "https://Applicants.iuea.ac.ug",
+  stats: dynamicStats
+}: HeroProps) {
+  const displayStats = dynamicStats || defaultStats;
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[#0D0505]">
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
-          src="/hero.png"
+          src={image}
           alt="IUEA University graduates"
           className="absolute inset-0 w-full h-full object-cover object-[center_top]"
         />
@@ -37,7 +57,7 @@ export function Hero() {
             </span>
           </motion.div>
 
-          {/* Heading */}
+          {/* Heading - RESTORED ORIGINAL STYLE */}
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -45,10 +65,10 @@ export function Hero() {
             className="mt-6 lg:mt-8"
           >
             <span className="block text-white font-serif font-bold leading-tight" style={{ fontSize: 'clamp(36px, 8vw, 88px)' }}>
-              Learning to
+              {titleMain || "Learning to"}
             </span>
             <span className="block text-[#E8B84B] italic font-serif font-bold leading-tight" style={{ fontSize: 'clamp(40px, 9vw, 96px)' }}>
-              Succeed
+              {titleAccent || "Succeed"}
             </span>
           </motion.h1>
 
@@ -59,7 +79,7 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.6 }}
             className="mt-6 text-white/70 mx-auto lg:mx-0 text-[15px] lg:text-lg leading-relaxed max-w-[480px]"
           >
-            Shaping Africa's future through world-class education, cutting-edge research, and transformative experiences since 1998.
+            {subtitle || "Shaping Africa's future through world-class education, cutting-edge research, and transformative experiences since 1998."}
           </motion.p>
 
           {/* Buttons */}
@@ -70,10 +90,10 @@ export function Hero() {
             className="mt-10 flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
           >
             <a
-              href="https://Applicants.iuea.ac.ug"
+              href={buttonLink}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-9 py-4 bg-[#E8B84B] text-[#1A0A00] rounded-full font-bold text-lg hover:bg-[#D4A73D] transition-all"
             >
-              Apply Now
+              {buttonText}
               <ArrowRight className="w-5 h-5" />
             </a>
             <Link
@@ -91,10 +111,10 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 1.0 }}
             className="mt-16 lg:mt-20 flex flex-col sm:flex-row justify-center lg:justify-start gap-8 lg:gap-16"
           >
-            {stats.map((stat) => (
+            {displayStats.map((stat) => (
               <div key={stat.label} className="flex flex-col items-center lg:items-start">
                 <div className="text-xl lg:text-3xl font-bold text-white flex items-center gap-2">
-                  <stat.icon className="w-5 h-5 text-[#E8B84B]/60" />
+                  {stat.icon && <stat.icon className="w-5 h-5 text-[#E8B84B]/60" />}
                   {stat.value}
                 </div>
                 <div className="text-[10px] lg:text-xs text-white/40 uppercase tracking-[2px] mt-1 font-semibold">{stat.label}</div>

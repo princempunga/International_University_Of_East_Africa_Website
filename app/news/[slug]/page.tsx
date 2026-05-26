@@ -7,6 +7,8 @@ import { MotionDiv } from "@/components/motion-components"
 import { Calendar, User, Tag, Share2, ArrowLeft, Loader2, Newspaper } from "lucide-react"
 import api from "@/lib/api"
 import { notFound } from "next/navigation"
+import { SEO } from "@/components/seo"
+import { ArticleSchema, BreadcrumbSchema } from "@/components/structured-data"
 
 export default function NewsArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
@@ -58,8 +60,28 @@ export default function NewsArticlePage({ params }: { params: Promise<{ slug: st
 
   return (
     <main className="min-h-screen bg-white">
+      <SEO
+        title={article.title}
+        description={article.excerpt || article.content?.replace(/<[^>]*>/g, '').slice(0, 155)}
+        ogTitle={article.title}
+        ogDescription={article.excerpt || article.content?.replace(/<[^>]*>/g, '').slice(0, 155)}
+        ogImage={article.image_url}
+        canonicalUrl={`https://www.iuea.ac.ug/news/${article.slug}`}
+        pageType="article"
+      />
+      <ArticleSchema
+        title={article.title}
+        description={article.excerpt || ''}
+        image={article.image_url}
+        url={`https://www.iuea.ac.ug/news/${article.slug}`}
+        publishedAt={article.published_at || article.created_at}
+      />
+      <BreadcrumbSchema items={[
+        { name: 'Home', url: '/' },
+        { name: 'News', url: '/news' },
+        { name: article.title, url: `/news/${article.slug}` },
+      ]} />
 
-      
       {/* Article Header */}
       <section className="pt-32 pb-12 lg:pt-48 bg-[#F5F0E8]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

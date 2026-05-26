@@ -4,11 +4,15 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Users, Home, Trophy, Utensils, Music, Heart } from "lucide-react"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 
 export default function StudentLifePage() {
+  const seoComponent = useCMSSEO('student-life', { title: 'Student Life | IUEA', description: 'Discover clubs, sports, accommodation and vibrant student life at IUEA.' })
+
   return (
     <main className="min-h-screen">
+      {seoComponent}
 
       
       {/* Hero */}

@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { 
+import { useCMSSEO } from "@/hooks/useCMSSEO"
   FlaskConical, 
   Globe, 
   Lightbulb, 
@@ -20,8 +21,11 @@ import {
 } from "lucide-react"
 
 export default function ResearchPage() {
+  const seoComponent = useCMSSEO('research', { title: 'Research | IUEA', description: 'Explore research centers, projects and publications at IUEA.' })
+
   return (
     <main className="min-h-screen bg-white">
+      {seoComponent}
       
       {/* Cinematic Hero */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-[#8B0000]">

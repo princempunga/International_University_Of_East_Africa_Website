@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { FileText, CreditCard, Award, HelpCircle, ArrowRight, ChevronDown } from "lucide-react"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 const faqs = [
   {
@@ -42,10 +43,13 @@ const faqs = [
 ]
 
 export default function AdmissionsPage() {
+  const seoComponent = useCMSSEO('admissions', { title: 'Admissions | IUEA', description: 'Apply to IUEA — find entry requirements, fees, and the application process.' })
+
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   return (
     <main className="min-h-screen">
+      {seoComponent}
       
       {/* Hero */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-[#8B0000] z-1">

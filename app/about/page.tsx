@@ -4,11 +4,18 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { History, Target, Eye, Shield, Award, Users, BookOpen } from "lucide-react"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 
 export default function AboutPage() {
+  const seoComponent = useCMSSEO('about', {
+    title: 'About IUEA | Our Mission, Vision & History',
+    description: 'Learn about the International University of East Africa — our history, mission, and core values.',
+  })
+
   return (
     <main className="min-h-screen">
+      {seoComponent}
       
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">

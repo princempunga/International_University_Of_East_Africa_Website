@@ -5,11 +5,15 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Search, BookOpen, GraduationCap, Calendar, Zap } from "lucide-react"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 
 export default function AcademicsPage() {
+  const seoComponent = useCMSSEO('academics', { title: 'Academics | IUEA', description: 'Explore IUEA's diverse academic programs across multiple faculties.' })
+
   return (
     <main className="min-h-screen">
+      {seoComponent}
 
       
       {/* Hero */}

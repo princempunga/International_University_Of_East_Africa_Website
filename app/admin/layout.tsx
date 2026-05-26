@@ -34,6 +34,7 @@ const navItemsData = [
   { name: "Orders",       href: "/admin/orders",     icon: Package },
   { name: "News & Events",href: "/admin/news",       icon: Newspaper },
   { name: "Gallery",      href: "/admin/gallery",    icon: ImageIcon },
+  { name: "Website CMS",  href: "/admin/cms",        icon: LayoutDashboard },
   { name: "Messages",     href: "/admin/messages",   icon: Mail },
   { name: "Newsletter",   href: "/admin/newsletter", icon: Send },
 ]

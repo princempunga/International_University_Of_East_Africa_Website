@@ -4,11 +4,15 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Users, Briefcase, Award, Calendar, ArrowRight } from "lucide-react"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 
 export default function AlumniPage() {
+  const seoComponent = useCMSSEO('alumni', { title: 'Alumni | IUEA', description: 'Connect with the IUEA alumni network — events, directory and more.' })
+
   return (
     <main className="min-h-screen">
+      {seoComponent}
 
       
       {/* Hero */}

@@ -4,10 +4,14 @@ import Image from "next/image"
 import { motion } from "framer-motion"
 import { Book, Search, Globe, Clock, Shield, ArrowRight, Download, ExternalLink, Library as LibraryIcon } from "lucide-react"
 import Link from "next/link"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 export default function LibraryPage() {
+  const seoComponent = useCMSSEO('library', { title: 'Library | IUEA', description: 'Access IUEA's vast academic library resources and digital collections.' })
+
   return (
     <main className="min-h-screen bg-white">
+      {seoComponent}
 
       
       {/* Hero */}

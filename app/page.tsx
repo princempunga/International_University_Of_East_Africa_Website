@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Hero } from "@/components/hero"
 import { StatsBar } from "@/components/stats-bar"
 import { Faculties } from "@/components/faculties"
@@ -9,11 +12,40 @@ import { Testimonials } from "@/components/testimonials"
 import { NewsEvents } from "@/components/news-events"
 import { ShopTeaser } from "@/components/shop/shop-teaser"
 import { CTABanner } from "@/components/cta-banner"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 export default function Home() {
+  const [pageData, setPageData] = useState<any>(null)
+
+  useEffect(() => {
+    fetch('http://localhost:8000/api/cms/pages/home')
+      .then(res => res.json())
+      .then(data => setPageData(data))
+      .catch(err => console.error("CMS Load Error:", err))
+  }, [])
+
+  const seoComponent = useCMSSEO('home', {
+    title: 'IUEA - International University of East Africa',
+    description: 'Welcome to IUEA — offering world-class degrees, diplomas and certificates in Kampala, Uganda.',
+  })
+
+  const getSection = (key: string) => pageData?.sections?.find((s: any) => s.section_key === key)?.content || {}
+
+  const heroData = getSection('hero')
+  const statsData = getSection('stats')
+
   return (
     <main className="min-h-screen">
-      <Hero />
+      {seoComponent}
+      <Hero 
+        titleMain={heroData.title_main}
+        titleAccent={heroData.title_accent}
+        subtitle={heroData.subtitle}
+        image={heroData.image}
+        buttonText={heroData.button_text}
+        buttonLink={heroData.button_link}
+        stats={Array.isArray(statsData) ? statsData : undefined}
+      />
       <StatsBar />
       <Faculties />
       <FeaturedPrograms />

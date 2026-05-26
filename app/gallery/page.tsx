@@ -4,10 +4,13 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Search, Filter, Maximize2, X, Loader2, Image as ImageIcon } from "lucide-react"
 import Image from "next/image"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 const categories = ["All", "Campus", "Graduation", "Events", "Labs", "Sports", "General"]
 
 export default function GalleryPage() {
+  const seoComponent = useCMSSEO('gallery', { title: 'Gallery | IUEA', description: 'Browse photos from IUEA campus life, graduations, and events.' })
+
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [images, setImages] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -43,6 +46,7 @@ export default function GalleryPage() {
 
   return (
     <main className="min-h-screen bg-white">
+      {seoComponent}
 
 
       {/* Hero */}

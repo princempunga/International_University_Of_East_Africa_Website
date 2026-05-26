@@ -6,8 +6,11 @@ import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Calendar, Tag, ArrowRight, Search, Loader2, Newspaper } from "lucide-react"
 import api from "@/lib/api"
+import { useCMSSEO } from "@/hooks/useCMSSEO"
 
 export default function NewsPage() {
+  const seoComponent = useCMSSEO('news', { title: 'News & Events | IUEA', description: 'Stay updated with the latest news and events from IUEA.' })
+
   const [newsItems, setNewsItems] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState("")
@@ -46,6 +49,7 @@ export default function NewsPage() {
   }
   return (
     <main className="min-h-screen bg-white">
+      {seoComponent}
 
       
       {/* Hero */}
