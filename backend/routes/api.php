@@ -12,11 +12,12 @@ use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\NewsletterController;
 use App\Http\Controllers\Api\SuperAdminController;
+use App\Http\Controllers\Api\SeoController;
 use App\Http\Controllers\CMSController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\AdmissionsController;
-use App\Http\Controllers\SEOController;
+use App\Http\Controllers\SEOController as LegacySeoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,10 +55,12 @@ Route::get('/faculties', [FacultyController::class, 'index']);
 Route::get('/faculties/{slug}', [FacultyController::class, 'show']);
 Route::get('/programs/search', [ProgramController::class, 'search']);
 Route::get('/admissions/content', [AdmissionsController::class, 'index']);
-Route::get('/seo/all', [SEOController::class, 'index']);
-Route::get('/seo/{slug}', [SEOController::class, 'show']);
-Route::get('/sitemap.xml', [SEOController::class, 'sitemap']);
-Route::get('/robots.txt', [SEOController::class, 'robots']);
+
+// SEO Routes
+Route::get('/seo/{page_name}', [SeoController::class, 'show']);
+Route::get('/seo/legacy/all', [LegacySeoController::class, 'index']);
+Route::get('/sitemap.xml', [LegacySeoController::class, 'sitemap']);
+Route::get('/robots.txt', [LegacySeoController::class, 'robots']);
 
 // Protected routes (Any Admin)
 Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
@@ -110,8 +113,10 @@ Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
     Route::apiResource('faculties', FacultyController::class)->except(['index', 'show']);
     Route::apiResource('programs', ProgramController::class)->except(['search']);
     Route::apiResource('admissions', AdmissionsController::class)->except(['index']);
-    Route::apiResource('seo', SEOController::class)->except(['show']);
-    Route::post('/seo/upsert', [SEOController::class, 'upsert']);
+    
+    // SEO Settings
+    Route::get('/seo', [SeoController::class, 'index']);
+    Route::post('/seo/update', [SeoController::class, 'update']);
 });
 
 // Super Admin Only

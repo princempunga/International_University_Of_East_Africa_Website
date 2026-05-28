@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8000/api'
+export const API_URL = 'https://iuea-api-2026-v3.loca.lt/api'
 
 export const api = {
   // Get token from localStorage
@@ -76,19 +76,30 @@ export const api = {
   getProducts: () => api.authFetch('/products'),
   getPublicProducts: (params: any = {}) => {
     const query = new URLSearchParams(params).toString()
-    return fetch(`${API_URL}/products${query ? `?${query}` : ''}`).then(r => r.json())
+    return fetch(`${API_URL}/products${query ? `?${query}` : ''}`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null)
   },
-  getProductBySlug: (slug: string) => fetch(`${API_URL}/products/${slug}`).then(r => r.json()),
+  getProductBySlug: (slug: string) => 
+    fetch(`${API_URL}/products/${slug}`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
   createProduct: (data: any) => api.authFetch('/products', { 
     method: 'POST', body: JSON.stringify(data) 
   }),
 
   // Categories
-  getCategories: () => fetch(`${API_URL}/categories`).then(r => r.json()),
+  getCategories: () => 
+    fetch(`${API_URL}/categories`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
   
   // Orders
   getOrders: () => api.authFetch('/orders'),
-  trackOrder: (orderNumber: string) => fetch(`${API_URL}/orders/track/${orderNumber}`).then(r => r.json()),
+  trackOrder: (orderNumber: string) => 
+    fetch(`${API_URL}/orders/track/${orderNumber}`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
   updateOrderStatus: (id: number | string, status: string) => api.authFetch(`/orders/${id}/status`, {
     method: 'PUT', body: JSON.stringify({ status })
   }),
@@ -97,9 +108,14 @@ export const api = {
   getNews: () => api.authFetch('/news'),
   getPublicNews: (params: any = {}) => {
     const query = new URLSearchParams(params).toString()
-    return fetch(`${API_URL}/news${query ? `?${query}` : ''}`).then(r => r.json())
+    return fetch(`${API_URL}/news${query ? `?${query}` : ''}`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null)
   },
-  getNewsBySlug: (slug: string) => fetch(`${API_URL}/news/${slug}`).then(r => r.json()),
+  getNewsBySlug: (slug: string) => 
+    fetch(`${API_URL}/news/${slug}`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
   createNews: (data: any) => api.authFetch('/news', {
     method: 'POST', body: JSON.stringify(data)
   }),
@@ -112,7 +128,10 @@ export const api = {
 
   // Intakes
   getIntakes: () => api.authFetch('/intakes'),
-  getPublishedIntakes: () => fetch(`${API_URL}/intakes/published`).then(r => r.json()),
+  getPublishedIntakes: () => 
+    fetch(`${API_URL}/intakes/published`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
   activateIntake: (id: number | string) => api.authFetch(`/intakes/${id}/activate`, {
     method: 'POST'
   }),
@@ -132,6 +151,16 @@ export const api = {
     method: 'DELETE'
   }),
   getLogs: () => api.authFetch('/logs'),
+
+  // SEO Management
+  getSeo: (pageName: string) => 
+    fetch(`${API_URL}/seo/${pageName}`)
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null),
+  getAllSeo: () => api.authFetch('/seo'),
+  updateSeo: (data: any) => api.authFetch('/seo/update', {
+    method: 'POST', body: JSON.stringify(data)
+  }),
 }
 
 export default api

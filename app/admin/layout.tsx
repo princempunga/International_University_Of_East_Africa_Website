@@ -24,8 +24,10 @@ import {
   ShoppingCart,
   CheckCheck,
   X,
+  Search,
 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
+import { API_URL } from "@/lib/api"
 
 const navItemsData = [
   { name: "Dashboard",    href: "/admin/dashboard",  icon: LayoutDashboard },
@@ -37,6 +39,7 @@ const navItemsData = [
   { name: "Website CMS",  href: "/admin/cms",        icon: LayoutDashboard },
   { name: "Messages",     href: "/admin/messages",   icon: Mail },
   { name: "Newsletter",   href: "/admin/newsletter", icon: Send },
+  { name: "SEO Management",href: "/admin/seo",      icon: Search },
 ]
 
 const superAdminItems = [
@@ -65,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     try {
       // 1. Fetch Contacts
-      const contactRes = await fetch("http://localhost:8000/api/contacts", {
+      const contactRes = await fetch(`${API_URL}/contacts`, {
         headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
       })
       const contactData = await contactRes.json()
@@ -94,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
 
       // 2. Fetch Orders
-      const orderRes = await fetch("http://localhost:8000/api/orders", {
+      const orderRes = await fetch(`${API_URL}/orders`, {
         headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
       })
       const orderData = await orderRes.json()
