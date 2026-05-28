@@ -140,6 +140,7 @@ export function StructuredData({ type = "university", data = {} }: StructuredDat
 
   return (
     <script
+      suppressHydrationWarning
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema, null, 2) }}
     />
