@@ -1,18 +1,18 @@
 import { Metadata } from "next"
 
 // Hardcoded stable API URL for Server Components since they don't share the same env/context easily in dev
-const API_URL = 'https://iuea-api-2026-v3.loca.lt/api'
+const API_URL = 'http://127.0.0.1:8000/api'
 
 export async function getPageMetadata(pageName: string): Promise<Metadata> {
   try {
     const res = await fetch(`${API_URL}/seo/${pageName}`, {
       next: { revalidate: 3600 } // Cache for 1 hour
     })
-    
+
     if (!res.ok) throw new Error("SEO not found")
-    
+
     const { data } = await res.json()
-    
+
     return {
       title: data.title,
       description: data.description,

@@ -1,9 +1,9 @@
-export const API_URL = 'https://iuea-api-2026-v3.loca.lt/api'
+export const API_URL = 'http://127.0.0.1:8000/api'
 
 export const api = {
   // Get token from localStorage
   getToken: () => typeof window !== 'undefined' ? localStorage.getItem('iuea_token') : null,
-  
+
   // Authenticated request helper
   authFetch: async (endpoint: string, options: any = {}) => {
     const token = api.getToken()
@@ -17,7 +17,7 @@ export const api = {
           ...options.headers,
         },
       })
-      
+
       if (response.status === 401) {
         // Handle unauthorized (optional: trigger logout)
         if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
@@ -27,13 +27,13 @@ export const api = {
           window.location.href = '/login'
         }
       }
-      
+
       const data = await response.json().catch(() => null)
-      
+
       if (!response.ok) {
         throw new Error(data?.message || `Request failed with status ${response.status}`)
       }
-      
+
       return data
     } catch (error: any) {
       console.error(`API Error (${endpoint}):`, error)
@@ -45,10 +45,10 @@ export const api = {
   },
 
   // Auth
-  login: (email: string, password: string) => 
+  login: (email: string, password: string) =>
     fetch(`${API_URL}/auth/login`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
@@ -71,7 +71,7 @@ export const api = {
 
   // Dashboard stats
   getStats: () => api.authFetch('/stats'),
-  
+
   // Products
   getProducts: () => api.authFetch('/products'),
   getPublicProducts: (params: any = {}) => {
@@ -80,30 +80,30 @@ export const api = {
       .then(r => r.ok ? r.json() : null)
       .catch(() => null)
   },
-  getProductBySlug: (slug: string) => 
+  getProductBySlug: (slug: string) =>
     fetch(`${API_URL}/products/${slug}`)
       .then(r => r.ok ? r.json() : null)
       .catch(() => null),
-  createProduct: (data: any) => api.authFetch('/products', { 
-    method: 'POST', body: JSON.stringify(data) 
+  createProduct: (data: any) => api.authFetch('/products', {
+    method: 'POST', body: JSON.stringify(data)
   }),
 
   // Categories
-  getCategories: () => 
+  getCategories: () =>
     fetch(`${API_URL}/categories`)
       .then(r => r.ok ? r.json() : null)
       .catch(() => null),
-  
+
   // Orders
   getOrders: () => api.authFetch('/orders'),
-  trackOrder: (orderNumber: string) => 
+  trackOrder: (orderNumber: string) =>
     fetch(`${API_URL}/orders/track/${orderNumber}`)
       .then(r => r.ok ? r.json() : null)
       .catch(() => null),
   updateOrderStatus: (id: number | string, status: string) => api.authFetch(`/orders/${id}/status`, {
     method: 'PUT', body: JSON.stringify({ status })
   }),
-  
+
   // News
   getNews: () => api.authFetch('/news'),
   getPublicNews: (params: any = {}) => {
@@ -112,14 +112,14 @@ export const api = {
       .then(r => r.ok ? r.json() : null)
       .catch(() => null)
   },
-  getNewsBySlug: (slug: string) => 
+  getNewsBySlug: (slug: string) =>
     fetch(`${API_URL}/news/${slug}`)
       .then(r => r.ok ? r.json() : null)
       .catch(() => null),
   createNews: (data: any) => api.authFetch('/news', {
     method: 'POST', body: JSON.stringify(data)
   }),
-  
+
   // Contacts
   getContacts: () => api.authFetch('/contacts'),
   replyContact: (id: number | string, message: string) => api.authFetch(`/contacts/${id}/reply`, {
@@ -128,17 +128,17 @@ export const api = {
 
   // Intakes
   getIntakes: () => api.authFetch('/intakes'),
-  getPublishedIntakes: () => 
+  getPublishedIntakes: () =>
     fetch(`${API_URL}/intakes/published`)
       .then(r => r.ok ? r.json() : null)
       .catch(() => null),
   activateIntake: (id: number | string) => api.authFetch(`/intakes/${id}/activate`, {
     method: 'POST'
   }),
-  
+
   // Gallery
   getGallery: () => api.authFetch('/gallery'),
-  
+
   // Super Admin only
   getAdmins: () => api.authFetch('/admins'),
   createAdmin: (data: any) => api.authFetch('/admins', {
@@ -153,7 +153,7 @@ export const api = {
   getLogs: () => api.authFetch('/logs'),
 
   // SEO Management
-  getSeo: (pageName: string) => 
+  getSeo: (pageName: string) =>
     fetch(`${API_URL}/seo/${pageName}`)
       .then(r => r.ok ? r.json() : null)
       .catch(() => null),
